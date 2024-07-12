@@ -18,10 +18,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-
-        flatDir {
-            dirs "../../../finvu_android_sdk/core/build/outputs/aar/", "../../../finvu_android_sdk/client/build/outputs/aar/"
-        }
     }
 }
 
@@ -57,14 +53,9 @@ android {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.0.0'
 
-        debugImplementation(name: "core-debug", ext: "aar")
-        debugImplementation(name: "client-debug", ext: "aar")
-        debugImplementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
-
-        // TODO: Add release implementation dependency via public distribution
-        releaseImplementation(name: "core-release", ext: "aar")
-        releaseImplementation(name: "client-release", ext: "aar")
-        releaseImplementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
+        implementation files('libs/finvu-android-sdk-1.0.0.aar')
+        implementation files('libs/finvu-android-sdk-core-1.0.0.aar')
+        implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
     }
 
     testOptions {
