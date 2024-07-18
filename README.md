@@ -81,7 +81,7 @@ final FinvuManager finvuManager = FinvuManager(); // Factory constructor will al
 Initialize the SDK in your application's entry point (eg. splash screen). SDK can be initialized using the the following method.
 ```
 
-finvuManager.initialize(FinvuConfig(finvuEndpoint: "wss://wsslive.finvu.in/api"));
+finvuManager.initialize(FinvuConfig(finvuEndpoint: "wss://wsslive.finvu.in/consentapi"));
 ```
 
 ## Usage
