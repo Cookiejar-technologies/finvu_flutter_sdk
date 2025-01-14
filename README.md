@@ -32,12 +32,12 @@ dependencies:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: client
-      ref: 1.0.0
+      ref: 1.0.1
   finvu_flutter_sdk_core:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: core
-      ref: 1.0.0
+      ref: 1.0.1
 ```
 2. On android add the following repository to your project level `build.gradle` file. Note that you need to provide some github credentials.
 ```
@@ -48,7 +48,7 @@ allprojects {
         
         // Add these lines
         maven { 
-            url 'https://maven.pkg.github.com/Cookiejar-technologies/finvu_flutter_sdk' 
+            url 'https://maven.pkg.github.com/Cookiejar-technologies/finvu_android_sdk' 
             credentials {
                 username = System.getenv("GITHUB_PACKAGE_USERNAME")
                 password = System.getenv("GITHUB_PACKAGE_TOKEN")
