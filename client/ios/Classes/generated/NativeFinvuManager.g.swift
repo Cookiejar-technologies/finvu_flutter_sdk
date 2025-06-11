@@ -573,48 +573,6 @@ struct NativeProcessConsentRequestResponse {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct NativeUserConsentInfoDetails {
-  var consentId: String
-  var consentIntentEntityId: String? = nil
-  var consentIntentEntityName: String
-  var consentIdList: [String?]
-  var consentIntentUpdateTimestamp: String
-  var consentPurposeText: String
-  var status: String? = nil
-
-  static func fromList(_ list: [Any?]) -> NativeUserConsentInfoDetails? {
-    let consentId = list[0] as! String
-    let consentIntentEntityId: String? = nilOrValue(list[1])
-    let consentIntentEntityName = list[2] as! String
-    let consentIdList = list[3] as! [String?]
-    let consentIntentUpdateTimestamp = list[4] as! String
-    let consentPurposeText = list[5] as! String
-    let status: String? = nilOrValue(list[6])
-
-    return NativeUserConsentInfoDetails(
-      consentId: consentId,
-      consentIntentEntityId: consentIntentEntityId,
-      consentIntentEntityName: consentIntentEntityName,
-      consentIdList: consentIdList,
-      consentIntentUpdateTimestamp: consentIntentUpdateTimestamp,
-      consentPurposeText: consentPurposeText,
-      status: status
-    )
-  }
-  func toList() -> [Any?] {
-    return [
-      consentId,
-      consentIntentEntityId,
-      consentIntentEntityName,
-      consentIdList,
-      consentIntentUpdateTimestamp,
-      consentPurposeText,
-      status,
-    ]
-  }
-}
-
-/// Generated class from Pigeon that represents data sent in messages.
 struct NativeAccountAggregator {
   var id: String
 
@@ -843,8 +801,6 @@ private class NativeFinvuManagerCodecReader: FlutterStandardReader {
         return NativeTypeIdentifier.fromList(self.readValue() as! [Any?])
       case 155:
         return NativeTypeIdentifierInfo.fromList(self.readValue() as! [Any?])
-      case 156:
-        return NativeUserConsentInfoDetails.fromList(self.readValue() as! [Any?])
       default:
         return super.readValue(ofType: type)
     }
@@ -937,9 +893,6 @@ private class NativeFinvuManagerCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeTypeIdentifierInfo {
       super.writeByte(155)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserConsentInfoDetails {
-      super.writeByte(156)
-      super.writeValue(value.toList())
     } else {
       super.writeValue(value)
     }
@@ -981,7 +934,7 @@ protocol NativeFinvuManager {
   func getEntityInfo(entityId: String, entityType: String, completion: @escaping (Result<NativeEntityInfo, Error>) -> Void)
   func approveConsentRequest(consentRequest: NativeConsentRequestDetailInfo, linkedAccounts: [NativeLinkedAccountDetailsInfo], completion: @escaping (Result<NativeProcessConsentRequestResponse, Error>) -> Void)
   func denyConsentRequest(consentRequest: NativeConsentRequestDetailInfo, completion: @escaping (Result<NativeProcessConsentRequestResponse, Error>) -> Void)
-  func revokeConsent(consent: NativeUserConsentInfoDetails, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, completion: @escaping (Result<Void, Error>) -> Void)
+  func revokeConsent(consentId: String, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, completion: @escaping (Result<Void, Error>) -> Void)
   func getConsentHandleStatus(handleId: String, completion: @escaping (Result<NativeConsentHandleStatusResponse, Error>) -> Void)
   func getConsentRequestDetails(handleId: String, completion: @escaping (Result<NativeConsentRequestDetailInfo, Error>) -> Void)
   func logout(completion: @escaping (Result<Void, Error>) -> Void)
@@ -1312,10 +1265,10 @@ class NativeFinvuManagerSetup {
     if let api = api {
       revokeConsentChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let consentArg = args[0] as! NativeUserConsentInfoDetails
+        let consentIdArg = args[0] as! String
         let accountAggregatorArg: NativeAccountAggregator? = nilOrValue(args[1])
         let fipDetailsArg: NativeFIPReference? = nilOrValue(args[2])
-        api.revokeConsent(consent: consentArg, accountAggregator: accountAggregatorArg, fipDetails: fipDetailsArg) { result in
+        api.revokeConsent(consentId: consentIdArg, accountAggregator: accountAggregatorArg, fipDetails: fipDetailsArg) { result in
           switch result {
             case .success:
               reply(wrapResult(nil))

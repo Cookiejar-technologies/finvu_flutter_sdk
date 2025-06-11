@@ -589,18 +589,8 @@ class FinvuManager {
   /// API to revoke the consent for the given [consentId] and [consent].
   ///
   /// Throws [FinvuException] on failure.
-  Future<void> revokeConsent(String consentId, FinvuUserConsentInfo consent,
+  Future<void> revokeConsent(String consentId,
       AccountAggregator? accountAggregator, FIPReference? fipDetails) {
-    final nativeConsent = NativeUserConsentInfoDetails(
-      consentId: consentId,
-      consentIntentEntityId: consent.consentIntentEntityId,
-      consentIdList: consent.consentIdList,
-      consentIntentEntityName: consent.consentIntentEntityName,
-      consentIntentUpdateTimestamp:
-          consent.consentIntentUpdateTimestamp?.toIso8601String() ?? "",
-      consentPurposeText: consent.consentPurposeText,
-      status: consent.status,
-    );
     final nativeAA = accountAggregator != null
         ? NativeAccountAggregator(id: accountAggregator.id!)
         : null;
@@ -610,7 +600,7 @@ class FinvuManager {
         : null;
 
     return _nativeFinvuManager
-        .revokeConsent(nativeConsent, nativeAA, nativeFipDetails)
+        .revokeConsent(consentId, nativeAA, nativeFipDetails)
         .catchError(
           (e) => throw FinvuException.from(e),
           test: _platformExceptionTest,

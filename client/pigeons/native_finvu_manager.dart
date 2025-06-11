@@ -455,7 +455,7 @@ abstract class NativeFinvuManager {
 
   @async
   void revokeConsent(
-    NativeUserConsentInfoDetails consent,
+    String consentId,
     NativeAccountAggregator? accountAggregator,
     NativeFIPReference? fipDetails,
   );

@@ -651,57 +651,6 @@ class NativeProcessConsentRequestResponse {
   }
 }
 
-class NativeUserConsentInfoDetails {
-  NativeUserConsentInfoDetails({
-    required this.consentId,
-    this.consentIntentEntityId,
-    required this.consentIntentEntityName,
-    required this.consentIdList,
-    required this.consentIntentUpdateTimestamp,
-    required this.consentPurposeText,
-    this.status,
-  });
-
-  String consentId;
-
-  String? consentIntentEntityId;
-
-  String consentIntentEntityName;
-
-  List<String?> consentIdList;
-
-  String consentIntentUpdateTimestamp;
-
-  String consentPurposeText;
-
-  String? status;
-
-  Object encode() {
-    return <Object?>[
-      consentId,
-      consentIntentEntityId,
-      consentIntentEntityName,
-      consentIdList,
-      consentIntentUpdateTimestamp,
-      consentPurposeText,
-      status,
-    ];
-  }
-
-  static NativeUserConsentInfoDetails decode(Object result) {
-    result as List<Object?>;
-    return NativeUserConsentInfoDetails(
-      consentId: result[0]! as String,
-      consentIntentEntityId: result[1] as String?,
-      consentIntentEntityName: result[2]! as String,
-      consentIdList: (result[3] as List<Object?>?)!.cast<String?>(),
-      consentIntentUpdateTimestamp: result[4]! as String,
-      consentPurposeText: result[5]! as String,
-      status: result[6] as String?,
-    );
-  }
-}
-
 class NativeAccountAggregator {
   NativeAccountAggregator({
     required this.id,
@@ -992,9 +941,6 @@ class _NativeFinvuManagerCodec extends StandardMessageCodec {
     } else if (value is NativeTypeIdentifierInfo) {
       buffer.putUint8(155);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserConsentInfoDetails) {
-      buffer.putUint8(156);
-      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -1059,8 +1005,6 @@ class _NativeFinvuManagerCodec extends StandardMessageCodec {
         return NativeTypeIdentifier.decode(readValue(buffer)!);
       case 155: 
         return NativeTypeIdentifierInfo.decode(readValue(buffer)!);
-      case 156: 
-        return NativeUserConsentInfoDetails.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1565,7 +1509,7 @@ class NativeFinvuManager {
     }
   }
 
-  Future<void> revokeConsent(NativeUserConsentInfoDetails consent, NativeAccountAggregator? accountAggregator, NativeFIPReference? fipDetails) async {
+  Future<void> revokeConsent(String consentId, NativeAccountAggregator? accountAggregator, NativeFIPReference? fipDetails) async {
     const String __pigeon_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.revokeConsent';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
@@ -1573,7 +1517,7 @@ class NativeFinvuManager {
       binaryMessenger: __pigeon_binaryMessenger,
     );
     final List<Object?>? __pigeon_replyList =
-        await __pigeon_channel.send(<Object?>[consent, accountAggregator, fipDetails]) as List<Object?>?;
+        await __pigeon_channel.send(<Object?>[consentId, accountAggregator, fipDetails]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {

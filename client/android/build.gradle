@@ -53,8 +53,8 @@ android {
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.0.0'
 
-        implementation("com.finvu.android:core-sdk:1.0.3")
-        implementation("com.finvu.android:client-sdk:1.0.3")
+        implementation("com.finvu.android:core-sdk:1.0.4")
+        implementation("com.finvu.android:client-sdk:1.0.4")
     }
 
     testOptions {

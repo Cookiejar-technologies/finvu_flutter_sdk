@@ -319,21 +319,11 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
         }
     }
     
-    func revokeConsent(consent: NativeUserConsentInfoDetails, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, completion: @escaping (Result<Void, Error>) -> Void) {
-        let consentInfo = UserConsentInfoDetails(consentId: consent.consentId,
-                                          consentIntentEntityId: consent.consentIntentEntityId,
-                                          consentIntentEntityName: consent.consentIntentEntityName,
-                                          consentIdList: consent.consentIdList
-                                                            .filter({ consentId in consentId != nil})
-                                                            .map({ consentId in consentId! }),
-                                          consentIntentUpdateTimestamp: formatter.date(from: consent.consentIntentUpdateTimestamp)!,
-                                          consentPurposeText: consent.consentPurposeText,
-                                          status: consent.status)
-        
+    func revokeConsent(consentId: String, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, completion: @escaping (Result<Void, Error>) -> Void) {
         let aa: AccountAggregator? = accountAggregator != nil ? AccountAggregator(id: accountAggregator!.id) : nil
         let _fipDetails: FIPReference? = fipDetails != nil ? FIPReference(fipId: fipDetails!.fipId, fipName: fipDetails!.fipName) : nil
 
-        FinvuManager.shared.revokeConsent(consent: consentInfo, accountAggregator: aa, fipDetails: _fipDetails) { error in
+        FinvuManager.shared.revokeConsent(consentId: consentId, accountAggregator: aa, fipDetails: _fipDetails) { error in
             if (error != nil) {
                 completion(.failure(FlutterError(code: "\(error!.code)", message: error?.localizedDescription, details: nil)))
                 return

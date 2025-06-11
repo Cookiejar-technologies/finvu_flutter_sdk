@@ -559,43 +559,6 @@ data class NativeProcessConsentRequestResponse (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class NativeUserConsentInfoDetails (
-  val consentId: String,
-  val consentIntentEntityId: String? = null,
-  val consentIntentEntityName: String,
-  val consentIdList: List<String?>,
-  val consentIntentUpdateTimestamp: String,
-  val consentPurposeText: String,
-  val status: String? = null
-
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): NativeUserConsentInfoDetails {
-      val consentId = list[0] as String
-      val consentIntentEntityId = list[1] as String?
-      val consentIntentEntityName = list[2] as String
-      val consentIdList = list[3] as List<String?>
-      val consentIntentUpdateTimestamp = list[4] as String
-      val consentPurposeText = list[5] as String
-      val status = list[6] as String?
-      return NativeUserConsentInfoDetails(consentId, consentIntentEntityId, consentIntentEntityName, consentIdList, consentIntentUpdateTimestamp, consentPurposeText, status)
-    }
-  }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      consentId,
-      consentIntentEntityId,
-      consentIntentEntityName,
-      consentIdList,
-      consentIntentUpdateTimestamp,
-      consentPurposeText,
-      status,
-    )
-  }
-}
-
-/** Generated class from Pigeon that represents data sent in messages. */
 data class NativeAccountAggregator (
   val id: String
 
@@ -905,11 +868,6 @@ private object NativeFinvuManagerCodec : StandardMessageCodec() {
           NativeTypeIdentifierInfo.fromList(it)
         }
       }
-      156.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserConsentInfoDetails.fromList(it)
-        }
-      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -1027,10 +985,6 @@ private object NativeFinvuManagerCodec : StandardMessageCodec() {
         stream.write(155)
         writeValue(stream, value.toList())
       }
-      is NativeUserConsentInfoDetails -> {
-        stream.write(156)
-        writeValue(stream, value.toList())
-      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -1057,7 +1011,7 @@ interface NativeFinvuManager {
   fun getEntityInfo(entityId: String, entityType: String, callback: (Result<NativeEntityInfo>) -> Unit)
   fun approveConsentRequest(consentRequest: NativeConsentRequestDetailInfo, linkedAccounts: List<NativeLinkedAccountDetailsInfo>, callback: (Result<NativeProcessConsentRequestResponse>) -> Unit)
   fun denyConsentRequest(consentRequest: NativeConsentRequestDetailInfo, callback: (Result<NativeProcessConsentRequestResponse>) -> Unit)
-  fun revokeConsent(consent: NativeUserConsentInfoDetails, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, callback: (Result<Unit>) -> Unit)
+  fun revokeConsent(consentId: String, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, callback: (Result<Unit>) -> Unit)
   fun getConsentHandleStatus(handleId: String, callback: (Result<NativeConsentHandleStatusResponse>) -> Unit)
   fun getConsentRequestDetails(handleId: String, callback: (Result<NativeConsentRequestDetailInfo>) -> Unit)
   fun logout(callback: (Result<Unit>) -> Unit)
@@ -1446,10 +1400,10 @@ interface NativeFinvuManager {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val consentArg = args[0] as NativeUserConsentInfoDetails
+            val consentIdArg = args[0] as String
             val accountAggregatorArg = args[1] as NativeAccountAggregator?
             val fipDetailsArg = args[2] as NativeFIPReference?
-            api.revokeConsent(consentArg, accountAggregatorArg, fipDetailsArg) { result: Result<Unit> ->
+            api.revokeConsent(consentIdArg, accountAggregatorArg, fipDetailsArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

@@ -31,7 +31,6 @@ import NativeFIPFiTypeIdentifier
 import NativeFIPInfo
 import NativeFIPSearchResponse
 import NativeTypeIdentifier
-import NativeUserConsentInfoDetails
 import NativeFIPReference
 import com.finvu.android.utils.FinvuConfig
 import com.finvu.android.FinvuManager
@@ -536,19 +535,10 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, NativeFinvuManager {
     }
   }
 
-  override fun revokeConsent(consent: NativeUserConsentInfoDetails, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, callback: (Result<Unit>) -> Unit) {
-    val consentInfo = UserConsentInfoDetails(
-      consentId = consent.consentId,
-      consentIdList = consent.consentIdList.filterNotNull(),
-      consentIntentEntityId = consent.consentIntentEntityId,
-      consentIntentEntityName = consent.consentIntentEntityName,
-      consentPurposeText = consent.consentPurposeText,
-      consentIntentUpdateTimestamp = dateFormatter.parse(consent.consentIntentUpdateTimestamp)!!,
-      status = consent.status
-    )
+  override fun revokeConsent(consentId: String, accountAggregator: NativeAccountAggregator?, fipDetails: NativeFIPReference?, callback: (Result<Unit>) -> Unit) {
     val aa = if (accountAggregator != null) AccountAggregatorView(id = accountAggregator.id) else null
     val _fipDetails = if (fipDetails != null) FIPReferenceView(fipId = fipDetails.fipId, fipName = fipDetails.fipName) else null
-    FinvuManager.shared.revokeConsent(consentInfo, aa, _fipDetails) { result ->
+    FinvuManager.shared.revokeConsent(consentId, aa, _fipDetails) { result ->
       if (result.isFailure) {
         val error = result.exceptionOrNull() as FinvuException
         callback(Result.failure(NativeFinvuError(code = error.code.toString(), message = error.message)))
