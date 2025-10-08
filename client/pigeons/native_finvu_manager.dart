@@ -6,6 +6,7 @@ import 'package:pigeon/pigeon.dart';
       'android/src/main/kotlin/com/finvu/finvu_flutter_sdk/generated/NativeFinvuManager.g.kt',
   swiftOut: 'ios/Classes/generated/NativeFinvuManager.g.swift',
   kotlinOptions: KotlinOptions(errorClassName: 'NativeFinvuError'),
+  dartOptions: DartOptions(),
 ))
 class NativeFinvuConfig {
   NativeFinvuConfig({
