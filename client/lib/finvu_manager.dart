@@ -1,4 +1,6 @@
 import 'package:finvu_flutter_sdk/finvu_config.dart';
+import 'package:finvu_flutter_sdk/finvu_event.dart';
+import 'package:finvu_flutter_sdk/finvu_event_listener.dart';
 import 'package:finvu_flutter_sdk/generated/native_finvu_manager.g.dart'
     as native;
 import 'package:finvu_flutter_sdk_core/finvu_consent_info.dart';
@@ -9,9 +11,12 @@ import 'package:finvu_flutter_sdk_core/finvu_fip_info.dart';
 import 'package:finvu_flutter_sdk_core/finvu_handle_info.dart';
 import 'package:finvu_flutter_sdk_core/finvu_linked_accounts.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 class FinvuManager {
   final _nativeFinvuManager = native.NativeFinvuManager();
+  final _nativeEventListener = _FinvuEventListenerHandler();
+  FinvuEventListener? _eventListener;
 
   static final FinvuManager _instance = FinvuManager._internal();
 
@@ -19,7 +24,15 @@ class FinvuManager {
     return _instance;
   }
 
-  FinvuManager._internal();
+  FinvuManager._internal() {
+    // Set up the native event listener handler
+    _nativeEventListener._manager = this;
+    native.NativeFinvuEventListener.setUp(
+      _nativeEventListener,
+      binaryMessenger:
+          WidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger,
+    );
+  }
 
   get _platformExceptionTest => (e) => e is PlatformException;
 
@@ -105,15 +118,10 @@ class FinvuManager {
   ///
   /// [FinvuHandleInfo] is returned on success, and session is established.
   /// Thows [FinvuException] on failure.
-  Future<FinvuHandleInfo> verifyLoginOtp(
-    String otp,
-    String otpReference,
-  ) {
+  Future<FinvuHandleInfo> verifyLoginOtp(String otp, String otpReference) {
     return _nativeFinvuManager
         .verifyLoginOtp(otp, otpReference)
-        .then(
-          (handleInfo) => FinvuHandleInfo(userId: handleInfo.userId),
-        )
+        .then((handleInfo) => FinvuHandleInfo(userId: handleInfo.userId))
         .catchError(
           (e) => throw FinvuException.from(e),
           test: _platformExceptionTest,
@@ -375,7 +383,8 @@ class FinvuManager {
         .linkAccounts(nativeFipDetails, nativeAccounts)
         .then(
           (value) => FinvuAccountLinkingRequestReference(
-              referenceNumber: value.referenceNumber),
+            referenceNumber: value.referenceNumber,
+          ),
         )
         .catchError(
           (e) => throw FinvuException.from(e),
@@ -605,14 +614,19 @@ class FinvuManager {
   /// API to revoke the consent for the given [consentId] and [consent].
   ///
   /// Throws [FinvuException] on failure.
-  Future<void> revokeConsent(String consentId,
-      AccountAggregator? accountAggregator, FIPReference? fipDetails) {
+  Future<void> revokeConsent(
+    String consentId,
+    AccountAggregator? accountAggregator,
+    FIPReference? fipDetails,
+  ) {
     final nativeAA = accountAggregator != null
         ? native.NativeAccountAggregator(id: accountAggregator.id!)
         : null;
     final nativeFipDetails = fipDetails != null
         ? native.NativeFIPReference(
-            fipId: fipDetails.fipId, fipName: fipDetails.fipName)
+            fipId: fipDetails.fipId,
+            fipName: fipDetails.fipName,
+          )
         : null;
 
     return _nativeFinvuManager
@@ -643,9 +657,8 @@ class FinvuManager {
     return _nativeFinvuManager
         .getConsentHandleStatus(handleId)
         .then(
-          (response) => FinvuConsentHandleStatusResponse(
-            status: response.status,
-          ),
+          (response) =>
+              FinvuConsentHandleStatusResponse(status: response.status),
         )
         .catchError(
           (e) => throw FinvuException.from(e),
@@ -662,5 +675,72 @@ class FinvuManager {
           (e) => throw FinvuException.from(e),
           test: _platformExceptionTest,
         );
+  }
+
+  /// Add an event listener to receive SDK events
+  ///
+  /// This initializes the event tracker on first call.
+  /// No coroutine scope needed - tracker handles it internally.
+  ///
+  /// [listener] The event listener to add
+  void addEventListener(FinvuEventListener listener) {
+    _eventListener = listener;
+    _nativeFinvuManager.addEventListener();
+  }
+
+  /// Remove an event listener
+  ///
+  /// When the last listener is removed, the tracker is cleaned up
+  /// and all event counts are reset.
+  ///
+  /// [listener] The event listener to remove
+  void removeEventListener() {
+    _eventListener = null;
+    _nativeFinvuManager.removeEventListener();
+  }
+
+  /// Enable/disable event tracking
+  ///
+  /// Events are disabled by default. You must call setEventsEnabled(true)
+  /// to start tracking events, even if listeners are added.
+  ///
+  /// [enabled] True to enable event tracking, false to disable
+  void setEventsEnabled(bool enabled) {
+    _nativeFinvuManager.setEventsEnabled(enabled);
+  }
+}
+
+/// Internal handler for native event callbacks
+class _FinvuEventListenerHandler extends native.NativeFinvuEventListener {
+  FinvuManager? _manager;
+
+  @override
+  void onEvent(native.NativeFinvuEvent event) {
+    final listener = _manager?._eventListener;
+
+    if (listener != null) {
+      // Convert native event to Dart event
+      final dartEvent = FinvuEvent(
+        eventName: event.eventName,
+        eventCategory: event.eventCategory,
+        timestamp: event.timestamp,
+        aaSdkVersion: event.aaSdkVersion,
+        params: _convertParams(event.params),
+      );
+
+      listener.onEvent(dartEvent);
+    }
+  }
+
+  Map<String, dynamic> _convertParams(Map<String?, Object?>? nativeParams) {
+    if (nativeParams == null) return {};
+
+    final Map<String, dynamic> params = {};
+    nativeParams.forEach((key, value) {
+      if (key != null) {
+        params[key] = value;
+      }
+    });
+    return params;
   }
 }

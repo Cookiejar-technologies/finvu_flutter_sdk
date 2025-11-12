@@ -1,21 +1,18 @@
 import 'package:pigeon/pigeon.dart';
 
-@ConfigurePigeon(PigeonOptions(
-  dartOut: 'lib/generated/native_finvu_manager.g.dart',
-  kotlinOut:
-      'android/src/main/kotlin/com/finvu/finvu_flutter_sdk/generated/NativeFinvuManager.g.kt',
-  swiftOut: 'ios/Classes/generated/NativeFinvuManager.g.swift',
-  kotlinOptions: KotlinOptions(errorClassName: 'NativeFinvuError'),
-))
-enum FinvuEnv {
-  uat,
-  production,
-}
+@ConfigurePigeon(
+  PigeonOptions(
+    dartOut: 'lib/generated/native_finvu_manager.g.dart',
+    kotlinOut:
+        'android/src/main/kotlin/com/finvu/finvu_flutter_sdk/generated/NativeFinvuManager.g.kt',
+    swiftOut: 'ios/Classes/generated/NativeFinvuManager.g.swift',
+    kotlinOptions: KotlinOptions(errorClassName: 'NativeFinvuError'),
+  ),
+)
+enum FinvuEnv { uat, production }
 
 class NativeFinvuSnaAuthConfig {
-  NativeFinvuSnaAuthConfig({
-    required this.environment,
-  });
+  NativeFinvuSnaAuthConfig({required this.environment});
   FinvuEnv environment;
 }
 
@@ -36,28 +33,19 @@ class NativeHandleInfo {
 }
 
 class NativeFIPDetails {
-  NativeFIPDetails({
-    required this.fipId,
-    required this.typeIdentifiers,
-  });
+  NativeFIPDetails({required this.fipId, required this.typeIdentifiers});
   String fipId;
   List<NativeFIPFiTypeIdentifier?> typeIdentifiers;
 }
 
 class NativeFIPFiTypeIdentifier {
-  NativeFIPFiTypeIdentifier({
-    required this.fiType,
-    required this.identifiers,
-  });
+  NativeFIPFiTypeIdentifier({required this.fiType, required this.identifiers});
   String fiType;
   List<NativeTypeIdentifier?> identifiers;
 }
 
 class NativeTypeIdentifier {
-  NativeTypeIdentifier({
-    required this.type,
-    required this.category,
-  });
+  NativeTypeIdentifier({required this.type, required this.category});
   String type;
   String category;
 }
@@ -87,17 +75,13 @@ class NativeDiscoveredAccountInfo {
 }
 
 class NativeDiscoveredAccountsResponse {
-  NativeDiscoveredAccountsResponse({
-    required this.accounts,
-  });
+  NativeDiscoveredAccountsResponse({required this.accounts});
 
   List<NativeDiscoveredAccountInfo?> accounts;
 }
 
 class NativeAccountLinkingRequestReference {
-  NativeAccountLinkingRequestReference({
-    required this.referenceNumber,
-  });
+  NativeAccountLinkingRequestReference({required this.referenceNumber});
   String referenceNumber;
 }
 
@@ -115,16 +99,12 @@ class NativeLinkedAccountInfo {
 }
 
 class NativeConfirmAccountLinkingInfo {
-  NativeConfirmAccountLinkingInfo({
-    required this.linkedAccounts,
-  });
+  NativeConfirmAccountLinkingInfo({required this.linkedAccounts});
   List<NativeLinkedAccountInfo?> linkedAccounts;
 }
 
 class NativeLinkedAccountsResponse {
-  NativeLinkedAccountsResponse({
-    required this.linkedAccounts,
-  });
+  NativeLinkedAccountsResponse({required this.linkedAccounts});
   List<NativeLinkedAccountDetailsInfo?> linkedAccounts;
 }
 
@@ -156,20 +136,14 @@ class NativeLinkedAccountDetailsInfo {
 }
 
 class NativeFinancialInformationEntity {
-  NativeFinancialInformationEntity({
-    required this.id,
-    required this.name,
-  });
+  NativeFinancialInformationEntity({required this.id, required this.name});
 
   String id;
   String name;
 }
 
 class NativeConsentPurposeInfo {
-  NativeConsentPurposeInfo({
-    required this.code,
-    required this.text,
-  });
+  NativeConsentPurposeInfo({required this.code, required this.text});
 
   String code;
   String text;
@@ -204,40 +178,28 @@ class NativeConsentRequestDetailInfo {
 }
 
 class NativeDateTimeRange {
-  NativeDateTimeRange({
-    required this.from,
-    required this.to,
-  });
+  NativeDateTimeRange({required this.from, required this.to});
 
   String from;
   String to;
 }
 
 class NativeConsentDataFrequency {
-  NativeConsentDataFrequency({
-    required this.unit,
-    required this.value,
-  });
+  NativeConsentDataFrequency({required this.unit, required this.value});
 
   String unit;
   double value;
 }
 
 class NativeConsentDataLifePeriod {
-  NativeConsentDataLifePeriod({
-    required this.unit,
-    required this.value,
-  });
+  NativeConsentDataLifePeriod({required this.unit, required this.value});
 
   String unit;
   double value;
 }
 
 class NativeConsentInfo {
-  NativeConsentInfo({
-    required this.consentId,
-    required this.fipId,
-  });
+  NativeConsentInfo({required this.consentId, required this.fipId});
 
   String consentId;
   String? fipId;
@@ -294,18 +256,13 @@ class NativeUserConsentInfoDetails {
 }
 
 class NativeAccountAggregator {
-  NativeAccountAggregator({
-    required this.id,
-  });
+  NativeAccountAggregator({required this.id});
 
   String id;
 }
 
 class NativeFIPReference {
-  NativeFIPReference({
-    required this.fipId,
-    required this.fipName,
-  });
+  NativeFIPReference({required this.fipId, required this.fipName});
 
   String fipId;
   String fipName;
@@ -341,9 +298,7 @@ class NativeLoginOtpReference {
 }
 
 class NativeConsentHandleStatusResponse {
-  NativeConsentHandleStatusResponse({
-    required this.status,
-  });
+  NativeConsentHandleStatusResponse({required this.status});
   String status;
 }
 
@@ -368,9 +323,7 @@ class NativeFIPInfo {
 }
 
 class NativeFIPSearchResponse {
-  NativeFIPSearchResponse({
-    required this.searchOptions,
-  });
+  NativeFIPSearchResponse({required this.searchOptions});
   List<NativeFIPInfo?> searchOptions;
 }
 
@@ -388,6 +341,27 @@ class NativeEntityInfo {
   String? entityIconUri;
   String? entityLogoUri;
   String? entityLogoWithNameUri;
+}
+
+class NativeFinvuEvent {
+  NativeFinvuEvent({
+    required this.eventName,
+    required this.eventCategory,
+    required this.timestamp,
+    required this.aaSdkVersion,
+    this.params,
+  });
+
+  String eventName;
+  String eventCategory;
+  String timestamp;
+  String aaSdkVersion;
+  Map<String?, Object?>? params;
+}
+
+@FlutterApi()
+abstract class NativeFinvuEventListener {
+  void onEvent(NativeFinvuEvent event);
 }
 
 @HostApi()
@@ -411,10 +385,7 @@ abstract class NativeFinvuManager {
   );
 
   @async
-  NativeHandleInfo verifyLoginOtp(
-    String otp,
-    String otpReference,
-  );
+  NativeHandleInfo verifyLoginOtp(String otp, String otpReference);
 
   @async
   NativeDiscoveredAccountsResponse discoverAccountsAsync(
@@ -486,4 +457,10 @@ abstract class NativeFinvuManager {
 
   @async
   void logout();
+
+  void addEventListener();
+
+  void removeEventListener();
+
+  void setEventsEnabled(bool enabled);
 }

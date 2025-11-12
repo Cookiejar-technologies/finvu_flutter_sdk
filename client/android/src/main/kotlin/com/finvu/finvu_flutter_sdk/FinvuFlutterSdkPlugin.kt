@@ -65,12 +65,17 @@ import com.finvu.android.publicInterface.AccountAggregatorView
 import com.finvu.android.publicInterface.FIPReferenceView
 import com.finvu.android.publicInterface.UserConsentInfo
 import com.finvu.android.publicInterface.UserConsentInfoDetails
+import com.finvu.android.publicInterface.FinvuEventListener
+import com.finvu.android.publicInterface.FinvuEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodChannel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 data class FinvuSNAAuthClientConfig(
     override val activity: Activity,
@@ -100,6 +105,10 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   // Coroutine scope for native calls
   private var scope: CoroutineScope? = null
 
+  // Event listener for forwarding events to Flutter
+  private var eventListener: FinvuEventListener? = null
+  private var nativeEventListener: NativeFinvuEventListener? = null
+
   private val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
   init {
@@ -118,12 +127,20 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
     flutterPluginBinding = binding
     scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     NativeFinvuManager.setUp(binding.binaryMessenger, this)
+    
+    // Set up event listener for forwarding events to Flutter
+    nativeEventListener = NativeFinvuEventListener.setUp(binding.binaryMessenger, null)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     NativeFinvuManager.setUp(binding.binaryMessenger, null)
+    NativeFinvuEventListener.setUp(binding.binaryMessenger, null)
     scope?.cancel()
     scope = null
+    // Remove event listener from Android SDK
+    eventListener?.let { FinvuManager.shared.removeEventListener(it) }
+    eventListener = null
+    nativeEventListener = null
   }
 
   /* -------------------- ActivityAware -------------------- */
@@ -699,5 +716,50 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
 
       callback(Result.success(Unit))
     }
+  }
+
+  override fun addEventListener() {
+    if (eventListener == null) {
+      eventListener = object : FinvuEventListener {
+        override fun onEvent(event: FinvuEvent) {
+          // Convert Android event to Pigeon event and forward to Flutter
+          val paramsMap = event.params.mapValues { (_, value) ->
+            when (value) {
+              is List<*> -> value.map { it.toString() }
+              else -> value
+            }
+          }
+          
+          val nativeEvent = NativeFinvuEvent(
+            eventName = event.eventName,
+            eventCategory = event.eventCategory,
+            timestamp = event.timestamp,
+            aaSdkVersion = event.aaSdkVersion,
+            params = paramsMap
+          )
+          
+          // Forward event to Flutter on main thread
+          scope?.launch(Dispatchers.Main) {
+            try {
+              nativeEventListener?.onEvent(nativeEvent)
+            } catch (e: Exception) {
+              android.util.Log.e("FinvuFlutterSdk", "Error forwarding event to Flutter", e)
+            }
+          }
+        }
+      }
+      FinvuManager.shared.addEventListener(eventListener!!)
+    }
+  }
+
+  override fun removeEventListener() {
+    eventListener?.let {
+      FinvuManager.shared.removeEventListener(it)
+      eventListener = null
+    }
+  }
+
+  override fun setEventsEnabled(enabled: Boolean) {
+    FinvuManager.shared.setEventsEnabled(enabled)
   }
 }

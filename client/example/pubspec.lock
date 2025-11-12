@@ -75,9 +75,11 @@ packages:
   finvu_flutter_sdk_core:
     dependency: transitive
     description:
-      path: "../../core"
-      relative: true
-    source: path
+      path: core
+      ref: "1.0.5"
+      resolved-ref: d143bbaebf5ad7139950181d6d2866f838ac27bd
+      url: "https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git"
+    source: git
     version: "1.0.5"
   flutter:
     dependency: "direct main"
