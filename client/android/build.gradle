@@ -54,6 +54,6 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.mockito:mockito-core:5.0.0'
 
-    implementation("com.finvu.android:core-sdk:1.0.6")
-    implementation("com.finvu.android:client-sdk:1.0.7")
+    implementation("com.finvu.android:core-sdk-test:1.0.9")
+    implementation("com.finvu.android:client-sdk-test:1.0.9")
 }

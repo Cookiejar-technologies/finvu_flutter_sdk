@@ -48,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import com.finvu.android.publicInterface.ConsentDataFrequency
 import com.finvu.android.publicInterface.ConsentDataLifePeriod
 import com.finvu.android.publicInterface.ConsentDetail
@@ -67,15 +68,15 @@ import com.finvu.android.publicInterface.UserConsentInfo
 import com.finvu.android.publicInterface.UserConsentInfoDetails
 import com.finvu.android.publicInterface.FinvuEventListener
 import com.finvu.android.publicInterface.FinvuEvent
+import NativeFinvuEventListener
+import NativeFinvuEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 data class FinvuSNAAuthClientConfig(
     override val activity: Activity,
@@ -108,6 +109,7 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   // Event listener for forwarding events to Flutter
   private var eventListener: FinvuEventListener? = null
   private var nativeEventListener: NativeFinvuEventListener? = null
+  private var binaryMessenger: BinaryMessenger? = null
 
   private val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
@@ -125,18 +127,19 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     appContext = binding.applicationContext
     flutterPluginBinding = binding
+    binaryMessenger = binding.binaryMessenger
     scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     NativeFinvuManager.setUp(binding.binaryMessenger, this)
     
-    // Set up event listener for forwarding events to Flutter
-    nativeEventListener = NativeFinvuEventListener.setUp(binding.binaryMessenger, null)
+    // Create event listener instance for forwarding events to Flutter
+    nativeEventListener = NativeFinvuEventListener(binding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     NativeFinvuManager.setUp(binding.binaryMessenger, null)
-    NativeFinvuEventListener.setUp(binding.binaryMessenger, null)
     scope?.cancel()
     scope = null
+    binaryMessenger = null
     // Remove event listener from Android SDK
     eventListener?.let { FinvuManager.shared.removeEventListener(it) }
     eventListener = null
@@ -719,16 +722,16 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   }
 
   override fun addEventListener() {
-    if (eventListener == null) {
+    if (eventListener == null && nativeEventListener != null) {
       eventListener = object : FinvuEventListener {
         override fun onEvent(event: FinvuEvent) {
           // Convert Android event to Pigeon event and forward to Flutter
-          val paramsMap = event.params.mapValues { (_, value) ->
+          val paramsMap: Map<String?, Any?>? = event.params.mapValues { (_, value) ->
             when (value) {
               is List<*> -> value.map { it.toString() }
               else -> value
             }
-          }
+          }.mapKeys { (key, _) -> key }
           
           val nativeEvent = NativeFinvuEvent(
             eventName = event.eventName,
@@ -741,7 +744,11 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
           // Forward event to Flutter on main thread
           scope?.launch(Dispatchers.Main) {
             try {
-              nativeEventListener?.onEvent(nativeEvent)
+              nativeEventListener?.onEvent(nativeEvent) { result ->
+                if (result.isFailure) {
+                  android.util.Log.e("FinvuFlutterSdk", "Error forwarding event to Flutter: ${result.exceptionOrNull()?.message}")
+                }
+              }
             } catch (e: Exception) {
               android.util.Log.e("FinvuFlutterSdk", "Error forwarding event to Flutter", e)
             }
