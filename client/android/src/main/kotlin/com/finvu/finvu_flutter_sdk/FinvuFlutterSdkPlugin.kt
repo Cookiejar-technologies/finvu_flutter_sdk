@@ -779,8 +779,8 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
         category = nativeDef.category,
         stage = nativeDef.stage,
         fipId = nativeDef.fipId,
-        fips = nativeDef.fips?.toSet() ?: emptySet(),
-        fiTypes = nativeDef.fiTypes?.toSet() ?: emptySet()
+        fips = nativeDef.fips?.filterNotNull()?.toMutableList() ?: mutableListOf(),
+        fiTypes = nativeDef.fiTypes?.filterNotNull()?.toMutableList() ?: mutableListOf()
       )
     }
     FinvuManager.shared.registerCustomEvents(customEvents)
@@ -790,7 +790,7 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
     FinvuManager.shared.registerAliases(aliases)
   }
 
-  override fun track(eventName: String, params: Map<String?, Object?>?) {
+  override fun track(eventName: String, params: Map<String?, Any?>?) {
     val paramsMap: Map<String, Any?> = params?.mapKeys { it.key ?: "" }?.mapValues { it.value } ?: emptyMap()
     FinvuEventTracker.shared.track(eventName, paramsMap)
   }
