@@ -1,5 +1,6 @@
 import 'package:finvu_flutter_sdk/finvu_config.dart';
 import 'package:finvu_flutter_sdk/finvu_event.dart';
+import 'package:finvu_flutter_sdk/finvu_event_definition.dart';
 import 'package:finvu_flutter_sdk/finvu_event_listener.dart';
 import 'package:finvu_flutter_sdk/generated/native_finvu_manager.g.dart'
     as native;
@@ -34,7 +35,8 @@ class FinvuManager {
     );
   }
 
-  get _platformExceptionTest => (e) => e is PlatformException;
+  bool Function(dynamic) get _platformExceptionTest =>
+      (e) => e is PlatformException;
 
   /// Initializes the SDK with the [config]
   void initialize(final FinvuConfig config) {
@@ -707,6 +709,88 @@ class FinvuManager {
   /// [enabled] True to enable event tracking, false to disable
   void setEventsEnabled(bool enabled) {
     _nativeFinvuManager.setEventsEnabled(enabled);
+  }
+
+  /// Register custom events
+  ///
+  /// Custom events allow you to track events specific to your app.
+  /// They follow the same structure as standard events.
+  ///
+  /// Example:
+  /// ```dart
+  /// final customEvents = {
+  ///   'CUSTOM_BUTTON_CLICKED': FinvuEventDefinition(
+  ///     category: 'ui',
+  ///   ),
+  ///   'CUSTOM_API_CALLED': FinvuEventDefinition(
+  ///     category: 'api',
+  ///   ),
+  /// };
+  /// finvuManager.registerCustomEvents(customEvents);
+  /// ```
+  ///
+  /// Then track them:
+  /// ```dart
+  /// finvuManager.track('CUSTOM_BUTTON_CLICKED', {'buttonId': 'login'});
+  /// ```
+  ///
+  /// [events] Map of event name to EventDefinition
+  void registerCustomEvents(Map<String, FinvuEventDefinition> events) {
+    final nativeEvents = <String, native.NativeEventDefinition>{};
+    events.forEach((eventName, definition) {
+      nativeEvents[eventName] = native.NativeEventDefinition(
+        category: definition.category,
+        stage: definition.stage,
+        fipId: definition.fipId,
+        fips: definition.fips,
+        fiTypes: definition.fiTypes,
+      );
+    });
+    // Fire and forget - these are synchronous operations on native side
+    _nativeFinvuManager.registerCustomEvents(nativeEvents);
+  }
+
+  /// Register event aliases
+  ///
+  /// Aliases allow you to use custom names for standard events.
+  /// Useful for analytics or when integrating with third-party tools.
+  ///
+  /// Example:
+  /// ```dart
+  /// final aliases = {
+  ///   'LOGIN_OTP_GENERATED': 'otp_sent',
+  ///   'WEBSOCKET_CONNECTED': 'connection_established',
+  /// };
+  /// finvuManager.registerAliases(aliases);
+  /// ```
+  ///
+  /// When events are tracked, the alias will be used instead of the original name.
+  ///
+  /// [aliases] Map of standard event name to alias
+  void registerAliases(Map<String, String> aliases) {
+    // Fire and forget - these are synchronous operations on native side
+    _nativeFinvuManager.registerAliases(aliases);
+  }
+
+  /// Manually track an event
+  ///
+  /// Use this to track custom events or manually trigger standard events.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Track a custom event
+  /// finvuManager.track('CUSTOM_BUTTON_CLICKED', {'buttonId': 'login'});
+  ///
+  /// // Track a standard event with custom params
+  /// finvuManager.track('WEBSOCKET_CONNECTED', {'connectionTime': '100ms'});
+  /// ```
+  ///
+  /// [eventName] The name of the event to track
+  /// [params] Optional parameters to include with the event
+  void track(String eventName, [Map<String, dynamic>? params]) {
+    final nativeParams = params?.map((key, value) => MapEntry(key, value));
+    // Fire and forget - tracking is asynchronous on native side
+    _nativeFinvuManager.track(eventName, nativeParams);
   }
 }
 

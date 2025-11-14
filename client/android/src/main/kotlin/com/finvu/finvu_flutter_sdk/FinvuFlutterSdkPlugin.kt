@@ -68,8 +68,11 @@ import com.finvu.android.publicInterface.UserConsentInfo
 import com.finvu.android.publicInterface.UserConsentInfoDetails
 import com.finvu.android.publicInterface.FinvuEventListener
 import com.finvu.android.publicInterface.FinvuEvent
+import com.finvu.android.events.EventDefinition
+import com.finvu.android.events.FinvuEventTracker
 import NativeFinvuEventListener
 import NativeFinvuEvent
+import NativeEventDefinition
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
@@ -768,5 +771,27 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
 
   override fun setEventsEnabled(enabled: Boolean) {
     FinvuManager.shared.setEventsEnabled(enabled)
+  }
+
+  override fun registerCustomEvents(events: Map<String, NativeEventDefinition>) {
+    val customEvents = events.mapValues { (_, nativeDef) ->
+      EventDefinition(
+        category = nativeDef.category,
+        stage = nativeDef.stage,
+        fipId = nativeDef.fipId,
+        fips = nativeDef.fips?.toSet() ?: emptySet(),
+        fiTypes = nativeDef.fiTypes?.toSet() ?: emptySet()
+      )
+    }
+    FinvuManager.shared.registerCustomEvents(customEvents)
+  }
+
+  override fun registerAliases(aliases: Map<String, String>) {
+    FinvuManager.shared.registerAliases(aliases)
+  }
+
+  override fun track(eventName: String, params: Map<String?, Object?>?) {
+    val paramsMap: Map<String, Any?> = params?.mapKeys { it.key ?: "" }?.mapValues { it.value } ?: emptyMap()
+    FinvuEventTracker.shared.track(eventName, paramsMap)
   }
 }

@@ -1767,6 +1767,67 @@ class NativeFinvuEvent {
 ;
 }
 
+class NativeEventDefinition {
+  NativeEventDefinition({
+    required this.category,
+    this.stage,
+    this.fipId,
+    this.fips,
+    this.fiTypes,
+  });
+
+  String category;
+
+  String? stage;
+
+  String? fipId;
+
+  List<String?>? fips;
+
+  List<String?>? fiTypes;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      category,
+      stage,
+      fipId,
+      fips,
+      fiTypes,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeEventDefinition decode(Object result) {
+    result as List<Object?>;
+    return NativeEventDefinition(
+      category: result[0]! as String,
+      stage: result[1] as String?,
+      fipId: result[2] as String?,
+      fips: (result[3] as List<Object?>?)?.cast<String?>(),
+      fiTypes: (result[4] as List<Object?>?)?.cast<String?>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeEventDefinition || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -1877,6 +1938,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is NativeFinvuEvent) {
       buffer.putUint8(162);
       writeValue(buffer, value.encode());
+    }    else if (value is NativeEventDefinition) {
+      buffer.putUint8(163);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -1954,6 +2018,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return NativeEntityInfo.decode(readValue(buffer)!);
       case 162: 
         return NativeFinvuEvent.decode(readValue(buffer)!);
+      case 163: 
+        return NativeEventDefinition.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -2671,6 +2737,75 @@ class NativeFinvuManager {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> registerCustomEvents(Map<String, NativeEventDefinition> events) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.registerCustomEvents$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[events]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> registerAliases(Map<String, String> aliases) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.registerAliases$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[aliases]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> track(String eventName, Map<String?, Object?>? params) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.track$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[eventName, params]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

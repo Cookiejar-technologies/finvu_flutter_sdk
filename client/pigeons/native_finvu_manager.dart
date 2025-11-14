@@ -359,6 +359,22 @@ class NativeFinvuEvent {
   Map<String?, Object?>? params;
 }
 
+class NativeEventDefinition {
+  NativeEventDefinition({
+    required this.category,
+    this.stage,
+    this.fipId,
+    this.fips,
+    this.fiTypes,
+  });
+
+  String category;
+  String? stage;
+  String? fipId;
+  List<String?>? fips;
+  List<String?>? fiTypes;
+}
+
 @FlutterApi()
 abstract class NativeFinvuEventListener {
   void onEvent(NativeFinvuEvent event);
@@ -463,4 +479,10 @@ abstract class NativeFinvuManager {
   void removeEventListener();
 
   void setEventsEnabled(bool enabled);
+
+  void registerCustomEvents(Map<String, NativeEventDefinition> events);
+
+  void registerAliases(Map<String, String> aliases);
+
+  void track(String eventName, Map<String?, Object?>? params);
 }
