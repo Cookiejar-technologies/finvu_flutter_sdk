@@ -133,7 +133,7 @@ packages:
     dependency: "direct main"
     description:
       path: core
-      ref: eventsV2
+      ref: eventsV3
       resolved-ref: "70fc83744e3891b5f902383567baeda4f89ef91b"
       url: "https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git"
     source: git
