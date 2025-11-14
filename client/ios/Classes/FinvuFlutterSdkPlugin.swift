@@ -505,7 +505,7 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
                     self.plugin = plugin
                 }
                 
-                func onEvent(event: FinvuEvent) {
+                func onEvent(_ event: FinvuEvent) {
                     guard let plugin = plugin, let nativeEventListener = plugin.nativeEventListener else { return }
                     
                     // Convert iOS SDK event to Pigeon event
@@ -542,13 +542,13 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
             }
             
             eventListener = FlutterEventListenerWrapper(plugin: self)
-            FinvuManager.shared.addEventListener(listener: eventListener!)
+            FinvuManager.shared.addEventListener(eventListener!)
         }
     }
     
     func removeEventListener() throws {
         if let listener = eventListener {
-            FinvuManager.shared.removeEventListener(listener: listener)
+            FinvuManager.shared.removeEventListener(listener)
             eventListener = nil
         }
     }
