@@ -510,8 +510,8 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
                     
                     // Convert iOS SDK event to Pigeon event
                     var paramsMap: [String?: Any?]? = nil
-                    let eventParams = event.params
-                    if !eventParams.isEmpty {
+                    // Handle optional params safely
+                    if let eventParams = event.params as? [String: Any?], !eventParams.isEmpty {
                         paramsMap = [:]
                         for (key, value) in eventParams {
                             // Convert arrays to string arrays if needed
@@ -565,9 +565,7 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
             let fips = nativeDef.fips?.compactMap { $0 }
             let fiTypes = nativeDef.fiTypes?.compactMap { $0 }
             
-            // Create EventDefinition - iOS SDK should have this class
-            // Try without namespace first, if that fails it might need FinvuSDK.EventDefinition
-            return EventDefinition(
+            return FinvuSDK.EventDefinition(
                 category: nativeDef.category,
                 stage: nativeDef.stage,
                 fipId: nativeDef.fipId,
@@ -576,13 +574,11 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
             )
         }
         
-        // Match Android pattern - these methods are on FinvuManager
-        FinvuManager.shared.registerCustomEvents(customEvents)
+        FinvuEventTracker.shared.registerCustomEvents(customEvents)
     }
     
     func registerAliases(aliases: [String: String]) throws {
-        // Match Android pattern - these methods are on FinvuManager
-        FinvuManager.shared.registerAliases(aliases)
+        FinvuEventTracker.shared.registerAliases(aliases)
     }
     
     func track(eventName: String, params: [String?: Any?]?) throws {
@@ -594,8 +590,7 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
             }
         }
         
-        // track is on FinvuEventTracker, and doesn't use external parameter labels
-        FinvuEventTracker.shared.track(eventName, paramsMap)
+        FinvuEventTracker.shared.track(eventName, params: paramsMap)
     }
 }
 
