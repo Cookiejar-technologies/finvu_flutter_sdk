@@ -498,22 +498,23 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
     func addEventListener() throws {
         if eventListener == nil && nativeEventListener != nil {
             // Create a wrapper class that conforms to FinvuEventListener protocol
-            class FlutterEventListenerWrapper: FinvuEventListener {
+            class FlutterEventListenerWrapper: NSObject, FinvuEventListener {
                 weak var plugin: FinvuFlutterSdkPlugin?
                 
                 init(plugin: FinvuFlutterSdkPlugin) {
                     self.plugin = plugin
+                    super.init()
                 }
                 
                 func onEvent(_ event: FinvuEvent) {
                     guard let plugin = plugin, let nativeEventListener = plugin.nativeEventListener else { return }
                     
                     // Convert iOS SDK event to Pigeon event
+                    // iOS SDK uses [String: Any] for params, not [String: Any?]
                     var paramsMap: [String?: Any?]? = nil
-                    // Handle optional params safely
-                    if let eventParams = event.params as? [String: Any?], !eventParams.isEmpty {
+                    if !event.params.isEmpty {
                         paramsMap = [:]
-                        for (key, value) in eventParams {
+                        for (key, value) in event.params {
                             // Convert arrays to string arrays if needed
                             if let arrayValue = value as? [Any] {
                                 paramsMap?[key] = arrayValue.map { "\($0)" }
@@ -560,16 +561,14 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
     
     func registerCustomEvents(events: [String: NativeEventDefinition]) throws {
         // Convert NativeEventDefinition to iOS SDK EventDefinition
-        // Matching Android pattern: EventDefinition with category, stage, fipId, fips (Array<String>), fiTypes (Array<String>)
-        // Android uses MutableList<String> which maps to Array<String> in Swift
+        // iOS SDK EventDefinition uses [String] for fips and fiTypes (not Set)
         let customEvents = events.mapValues { nativeDef in
-            // Filter out nil values and convert to Array (matching Android's MutableList)
+            // Filter out nil values and convert to Array
             let fips = nativeDef.fips?.compactMap { $0 } ?? []
             let fiTypes = nativeDef.fiTypes?.compactMap { $0 } ?? []
             
-            // Use FinvuSDK.EventDefinition (fully qualified name since it's in the FinvuSDK module)
-            // iOS SDK needs EventDefinition struct/class matching Android SDK structure
-            return FinvuSDK.EventDefinition(
+            // EventDefinition is a class (not in FinvuSDK namespace)
+            return EventDefinition(
                 category: nativeDef.category,
                 stage: nativeDef.stage,
                 fipId: nativeDef.fipId,
@@ -578,26 +577,29 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
             )
         }
         
-        // Use FinvuManager.shared (matches Android pattern where it delegates to eventTracker)
-        FinvuManager.shared.registerCustomEvents(customEvents)
+        // registerCustomEvents is on FinvuEventTracker.shared (internal method, but accessible from same module)
+        FinvuEventTracker.shared.registerCustomEvents(customEvents)
     }
     
     func registerAliases(aliases: [String: String]) throws {
-        // Use FinvuManager.shared (matches Android pattern)
-        FinvuManager.shared.registerAliases(aliases)
+        // registerAliases is on FinvuEventTracker.shared
+        FinvuEventTracker.shared.registerAliases(aliases)
     }
     
     func track(eventName: String, params: [String?: Any?]?) throws {
-        // Convert nullable string keys to non-nullable (matching Android pattern)
-        var paramsMap: [String: Any?] = [:]
+        // Convert nullable string keys to non-nullable
+        // iOS SDK track method signature: track(_ eventName: String, params: [String: Any] = [:])
+        var paramsMap: [String: Any] = [:]
         if let params = params {
             for (key, value) in params {
-                paramsMap[key ?? ""] = value
+                // Convert Any? to Any (unwrap optionals where appropriate)
+                if let unwrappedValue = value {
+                    paramsMap[key ?? ""] = unwrappedValue
+                }
             }
         }
         
-        // Use FinvuEventTracker.shared.track (same as Android)
-        // iOS SDK track method signature: track(_ eventName: String, params: [String: Any?])
+        // track is on FinvuEventTracker.shared
         FinvuEventTracker.shared.track(eventName, params: paramsMap)
     }
 }

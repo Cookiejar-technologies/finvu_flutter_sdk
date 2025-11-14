@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: core
-      ref: eventsiOSV5
+      ref: eventsiOSV6
 
 dev_dependencies:
   flutter_test:
