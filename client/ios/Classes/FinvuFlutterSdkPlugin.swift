@@ -144,7 +144,7 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
                 TypeIdentifierInfo(category: nativeTypeIdentifierInfo.category, type: nativeTypeIdentifierInfo.type, value: nativeTypeIdentifierInfo.value)
         }
             
-        FinvuManager.shared.discoverAccounts(fipId: fipId, fiTypes: fiTypes, identifiers: identifiers) { response, error in
+        FinvuManager.shared.discoverAccountsAsync(fipId: fipId, fiTypes: fiTypes, identifiers: identifiers) { response, error in
             if let error = error {
                 let errorCode = error.errorCode ?? ""
                 let errorMessage = error.errorMessage ?? error.localizedDescription
