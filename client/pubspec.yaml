@@ -1,6 +1,6 @@
 name: finvu_flutter_sdk
 description: "A new Flutter plugin project."
-version: 1.0.8
+version: 2.0.0-test
 homepage: https://www.finvu.in/
 publish_to: none
 
@@ -19,7 +19,7 @@ dependencies:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: core
-      ref: 1.0.8
+      ref: 2.0.0-test
 
 dev_dependencies:
   flutter_test:

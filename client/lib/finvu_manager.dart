@@ -2,6 +2,7 @@ import 'package:finvu_flutter_sdk/finvu_config.dart';
 import 'package:finvu_flutter_sdk/finvu_event.dart';
 import 'package:finvu_flutter_sdk/finvu_event_definition.dart';
 import 'package:finvu_flutter_sdk/finvu_event_listener.dart';
+import 'package:finvu_flutter_sdk/finvu_mfa_client.dart';
 import 'package:finvu_flutter_sdk/generated/native_finvu_manager.g.dart'
     as native;
 import 'package:finvu_flutter_sdk_core/finvu_consent_info.dart';
@@ -16,6 +17,9 @@ import 'package:flutter/widgets.dart';
 
 class FinvuManager {
   final _nativeFinvuManager = native.NativeFinvuManager();
+
+  /// Step-based MFA login (OTP, SNA, PIN, device binding). See [MfaClient].
+  late final MfaClient mfaClient = MfaClient(_nativeFinvuManager);
   final _nativeEventListener = _FinvuEventListenerHandler();
   FinvuEventListener? _eventListener;
 
@@ -37,6 +41,22 @@ class FinvuManager {
 
   bool Function(dynamic) get _platformExceptionTest =>
       (e) => e is PlatformException;
+
+  void _ensureNativeEventListenerRegistered() {
+    native.NativeFinvuEventListener.setUp(
+      _nativeEventListener,
+      binaryMessenger: WidgetsBinding.instance.defaultBinaryMessenger,
+    );
+  }
+
+  Future<T> _invokeNative<T>(Future<T> future, String operation) {
+    _ensureNativeEventListenerRegistered();
+    return future.catchError(
+      (Object error) =>
+          throw FinvuException.from(error, operation: operation),
+      test: _platformExceptionTest,
+    );
+  }
 
   /// Initializes the SDK with the [config]
   void initialize(final FinvuConfig config) {
@@ -60,10 +80,7 @@ class FinvuManager {
 
   /// Connects to the Finvu AA server
   Future<void> connect() {
-    return _nativeFinvuManager.connect().catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(_nativeFinvuManager.connect(), 'connect');
   }
 
   /// Disconnect from the Finvu AA server
@@ -73,15 +90,12 @@ class FinvuManager {
 
   /// Check if the SDK is connected to the Finvu AA server
   Future<bool> isConnected() {
-    return _nativeFinvuManager.isConnected().catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(_nativeFinvuManager.isConnected(), 'isConnected');
   }
 
   /// Check if the SDK has an active session
   Future<bool> hasSession() {
-    return _nativeFinvuManager.hasSession();
+    return _invokeNative(_nativeFinvuManager.hasSession(), 'hasSession');
   }
 
   /// Login with [username] or [mobileNumber].
@@ -96,23 +110,22 @@ class FinvuManager {
     String? mobileNumber,
     String consentHandleId,
   ) {
-    return _nativeFinvuManager
-        .loginWithUsernameOrMobileNumberAndConsentHandle(
-          username,
-          mobileNumber,
-          consentHandleId,
-        )
-        .then(
-          (otpReference) => FinvuLoginOtpReference(
-            reference: otpReference.reference,
-            snaToken: otpReference.snaToken,
-            authType: otpReference.authType,
+    return _invokeNative(
+      _nativeFinvuManager
+          .loginWithUsernameOrMobileNumberAndConsentHandle(
+            username,
+            mobileNumber,
+            consentHandleId,
+          )
+          .then(
+            (otpReference) => FinvuLoginOtpReference(
+              reference: otpReference.reference,
+              snaToken: otpReference.snaToken,
+              authType: otpReference.authType,
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'loginWithUsernameOrMobileNumberAndConsentHandle',
+    );
   }
 
   /// Verify the [otp] received on the registered mobile number. [otpReference]
@@ -124,15 +137,14 @@ class FinvuManager {
     String otp,
     String otpReference,
   ) {
-    return _nativeFinvuManager
-        .verifyLoginOtp(otp, otpReference)
-        .then(
-          (handleInfo) => FinvuHandleInfo(userId: handleInfo.userId),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager
+          .verifyLoginOtp(otp, otpReference)
+          .then(
+            (handleInfo) => FinvuHandleInfo(userId: handleInfo.userId),
+          ),
+      'verifyLoginOtp',
+    );
   }
 
   /// Initiates mobile verification for the given [mobileNumber]. Sometimes a
@@ -144,12 +156,10 @@ class FinvuManager {
   ///
   /// Throws [FinvuException] on failure.
   Future<void> initiateMobileVerification(String mobileNumber) {
-    return _nativeFinvuManager
-        .initiateMobileVerification(mobileNumber)
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager.initiateMobileVerification(mobileNumber),
+      'initiateMobileVerification',
+    );
   }
 
   /// Completes the mobile verification process for the given [mobileNumber] and [otp].
@@ -157,12 +167,10 @@ class FinvuManager {
   ///
   /// Throws [FinvuException] on failure.
   Future<void> completeMobileVerification(String mobileNumber, String otp) {
-    return _nativeFinvuManager
-        .completeMobileVerification(mobileNumber, otp)
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager.completeMobileVerification(mobileNumber, otp),
+      'completeMobileVerification',
+    );
   }
 
   /// Fetch the linked accounts for the current user. If there are no linked
@@ -173,35 +181,36 @@ class FinvuManager {
   /// Returns a list of [FinvuLinkedAccountDetailsInfo] on success.
   /// Throws [FinvuException] on failure.
   Future<List<FinvuLinkedAccountDetailsInfo>> fetchLinkedAccounts() {
-    return _nativeFinvuManager
-        .fetchLinkedAccounts()
-        .then(
-          (value) => value.linkedAccounts.nonNulls
-              .map(
-                (account) => FinvuLinkedAccountDetailsInfo(
-                  userId: account.userId,
-                  fipId: account.fipId,
-                  fipName: account.fipName,
-                  maskedAccountNumber: account.maskedAccountNumber,
-                  accountReferenceNumber: account.accountReferenceNumber,
-                  linkReferenceNumber: account.linkReferenceNumber,
-                  consentIdList: account.consentIdList?.nonNulls.toList(),
-                  fiType: account.fiType,
-                  accountType: account.accountType,
-                  linkedAccountUpdateTimestamp: account
-                              .linkedAccountUpdateTimestamp !=
-                          null
-                      ? DateTime.tryParse(account.linkedAccountUpdateTimestamp!)
-                      : null,
-                  authenticatorType: account.authenticatorType,
-                ),
-              )
-              .toList(),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager
+          .fetchLinkedAccounts()
+          .then(
+            (value) => value.linkedAccounts.nonNulls
+                .map(
+                  (account) => FinvuLinkedAccountDetailsInfo(
+                    userId: account.userId,
+                    fipId: account.fipId,
+                    fipName: account.fipName,
+                    maskedAccountNumber: account.maskedAccountNumber,
+                    accountReferenceNumber: account.accountReferenceNumber,
+                    linkReferenceNumber: account.linkReferenceNumber,
+                    consentIdList: account.consentIdList?.nonNulls.toList(),
+                    fiType: account.fiType,
+                    accountType: account.accountType,
+                    linkedAccountUpdateTimestamp: account
+                                .linkedAccountUpdateTimestamp !=
+                            null
+                        ? DateTime.tryParse(
+                            account.linkedAccountUpdateTimestamp!,
+                          )
+                        : null,
+                    authenticatorType: account.authenticatorType,
+                  ),
+                )
+                .toList(),
+          ),
+      'fetchLinkedAccounts',
+    );
   }
 
   /// Fetch the list of accounts that the user has with [fipDetails]. Accounts
@@ -226,24 +235,23 @@ class FinvuManager {
             )
             .toList();
 
-    return _nativeFinvuManager
-        .discoverAccounts(fipId, fiTypes, nativeTypeIdentifierInfo)
-        .then(
-          (response) => response.accounts.nonNulls
-              .map(
-                (account) => FinvuDiscoveredAccountInfo(
-                  accountType: account.accountType,
-                  accountReferenceNumber: account.accountReferenceNumber,
-                  maskedAccountNumber: account.maskedAccountNumber,
-                  fiType: account.fiType,
-                ),
-              )
-              .toList(),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager
+          .discoverAccounts(fipId, fiTypes, nativeTypeIdentifierInfo)
+          .then(
+            (response) => response.accounts.nonNulls
+                .map(
+                  (account) => FinvuDiscoveredAccountInfo(
+                    accountType: account.accountType,
+                    accountReferenceNumber: account.accountReferenceNumber,
+                    maskedAccountNumber: account.maskedAccountNumber,
+                    fiType: account.fiType,
+                  ),
+                )
+                .toList(),
+          ),
+      'discoverAccounts',
+    );
   }
 
   Future<List<FinvuDiscoveredAccountInfo>> discoverAccountsAsync(
@@ -262,95 +270,91 @@ class FinvuManager {
             )
             .toList();
 
-    return _nativeFinvuManager
-        .discoverAccountsAsync(fipId, fiTypes, nativeTypeIdentifierInfo)
-        .then(
-          (response) => response.accounts.nonNulls
-              .map(
-                (account) => FinvuDiscoveredAccountInfo(
-                  accountType: account.accountType,
-                  accountReferenceNumber: account.accountReferenceNumber,
-                  maskedAccountNumber: account.maskedAccountNumber,
-                  fiType: account.fiType,
-                ),
-              )
-              .toList(),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
-  }
-
-  Future<List<FinvuFIPInfo>> fipsAllFIPOptions() {
-    return _nativeFinvuManager
-        .fipsAllFIPOptions()
-        .then(
-          (searchResponse) => searchResponse.searchOptions.nonNulls
-              .map(
-                (fipInfo) => FinvuFIPInfo(
-                  fipId: fipInfo.fipId,
-                  productName: fipInfo.productName,
-                  fipFitypes: fipInfo.fipFitypes.nonNulls.toList(),
-                  productDesc: fipInfo.productDesc,
-                  productIconUri: fipInfo.productIconUri,
-                  enabled: fipInfo.enabled,
-                ),
-              )
-              .toList(),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
-  }
-
-  Future<FinvuFIPDetails> fetchFIPDetails(String fipId) {
-    return _nativeFinvuManager
-        .fetchFIPDetails(fipId)
-        .then(
-          (fipDetails) => FinvuFIPDetails(
-            fipId: fipDetails.fipId,
-            typeIdentifiers: fipDetails.typeIdentifiers.nonNulls
+    return _invokeNative(
+      _nativeFinvuManager
+          .discoverAccountsAsync(fipId, fiTypes, nativeTypeIdentifierInfo)
+          .then(
+            (response) => response.accounts.nonNulls
                 .map(
-                  (fipFiTypeIdentifier) => FinvuFIPFiTypeIdentifier(
-                    fiType: fipFiTypeIdentifier.fiType,
-                    identifiers: fipFiTypeIdentifier.identifiers.nonNulls
-                        .map(
-                          (typeIdentifier) => FinvuTypeIdentifier(
-                            type: typeIdentifier.type,
-                            category: typeIdentifier.category,
-                          ),
-                        )
-                        .toList(),
+                  (account) => FinvuDiscoveredAccountInfo(
+                    accountType: account.accountType,
+                    accountReferenceNumber: account.accountReferenceNumber,
+                    maskedAccountNumber: account.maskedAccountNumber,
+                    fiType: account.fiType,
                   ),
                 )
                 .toList(),
-            linkingOtpLength: fipDetails.linkingOtpLength,
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'discoverAccountsAsync',
+    );
+  }
+
+  Future<List<FinvuFIPInfo>> fipsAllFIPOptions() {
+    return _invokeNative(
+      _nativeFinvuManager
+          .fipsAllFIPOptions()
+          .then(
+            (searchResponse) => searchResponse.searchOptions.nonNulls
+                .map(
+                  (fipInfo) => FinvuFIPInfo(
+                    fipId: fipInfo.fipId,
+                    productName: fipInfo.productName,
+                    fipFitypes: fipInfo.fipFitypes.nonNulls.toList(),
+                    productDesc: fipInfo.productDesc,
+                    productIconUri: fipInfo.productIconUri,
+                    enabled: fipInfo.enabled,
+                  ),
+                )
+                .toList(),
+          ),
+      'fipsAllFIPOptions',
+    );
+  }
+
+  Future<FinvuFIPDetails> fetchFIPDetails(String fipId) {
+    return _invokeNative(
+      _nativeFinvuManager
+          .fetchFIPDetails(fipId)
+          .then(
+            (fipDetails) => FinvuFIPDetails(
+              fipId: fipDetails.fipId,
+              typeIdentifiers: fipDetails.typeIdentifiers.nonNulls
+                  .map(
+                    (fipFiTypeIdentifier) => FinvuFIPFiTypeIdentifier(
+                      fiType: fipFiTypeIdentifier.fiType,
+                      identifiers: fipFiTypeIdentifier.identifiers.nonNulls
+                          .map(
+                            (typeIdentifier) => FinvuTypeIdentifier(
+                              type: typeIdentifier.type,
+                              category: typeIdentifier.category,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                  .toList(),
+              linkingOtpLength: fipDetails.linkingOtpLength,
+            ),
+          ),
+      'fetchFIPDetails',
+    );
   }
 
   Future<FinvuEntityInfo> getEntityInfo(String entityId, String entityType) {
-    return _nativeFinvuManager
-        .getEntityInfo(entityId, entityType)
-        .then(
-          (entityInfo) => FinvuEntityInfo(
-            entityId: entityInfo.entityId,
-            entityName: entityInfo.entityName,
-            entityIconUri: entityInfo.entityIconUri,
-            entityLogoUri: entityInfo.entityLogoUri,
-            entityLogoWithNameUri: entityInfo.entityLogoWithNameUri,
+    return _invokeNative(
+      _nativeFinvuManager
+          .getEntityInfo(entityId, entityType)
+          .then(
+            (entityInfo) => FinvuEntityInfo(
+              entityId: entityInfo.entityId,
+              entityName: entityInfo.entityName,
+              entityIconUri: entityInfo.entityIconUri,
+              entityLogoUri: entityInfo.entityLogoUri,
+              entityLogoWithNameUri: entityInfo.entityLogoWithNameUri,
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'getEntityInfo',
+    );
   }
 
   Future<FinvuAccountLinkingRequestReference> linkAccounts(
@@ -388,16 +392,16 @@ class FinvuManager {
         )
         .toList();
 
-    return _nativeFinvuManager
-        .linkAccounts(nativeFipDetails, nativeAccounts)
-        .then(
-          (value) => FinvuAccountLinkingRequestReference(
-              referenceNumber: value.referenceNumber),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager
+          .linkAccounts(nativeFipDetails, nativeAccounts)
+          .then(
+            (value) => FinvuAccountLinkingRequestReference(
+              referenceNumber: value.referenceNumber,
+            ),
+          ),
+      'linkAccounts',
+    );
   }
 
   /// Confirm the account linking process with the [otp] received on the
@@ -412,26 +416,25 @@ class FinvuManager {
     final nativeRequestReference = native.NativeAccountLinkingRequestReference(
       referenceNumber: requestReference.referenceNumber,
     );
-    return _nativeFinvuManager
-        .confirmAccountLinking(nativeRequestReference, otp)
-        .then(
-          (value) => FinvuConfirmAccountLinkingInfo(
-            linkedAccounts: value.linkedAccounts.nonNulls
-                .map(
-                  (account) => FinvuLinkedAccountInfo(
-                    customerAddress: account.customerAddress,
-                    linkReferenceNumber: account.linkReferenceNumber,
-                    accountReferenceNumber: account.accountReferenceNumber,
-                    status: account.status,
-                  ),
-                )
-                .toList(),
+    return _invokeNative(
+      _nativeFinvuManager
+          .confirmAccountLinking(nativeRequestReference, otp)
+          .then(
+            (value) => FinvuConfirmAccountLinkingInfo(
+              linkedAccounts: value.linkedAccounts.nonNulls
+                  .map(
+                    (account) => FinvuLinkedAccountInfo(
+                      customerAddress: account.customerAddress,
+                      linkReferenceNumber: account.linkReferenceNumber,
+                      accountReferenceNumber: account.accountReferenceNumber,
+                      status: account.status,
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'confirmAccountLinking',
+    );
   }
 
   /// API to get consent requests raised by FIU with Finvu AA in a previous
@@ -442,45 +445,44 @@ class FinvuManager {
   Future<FinvuConsentRequestDetailInfo> getConsentRequestDetails(
     String handleId,
   ) {
-    return _nativeFinvuManager
-        .getConsentRequestDetails(handleId)
-        .then(
-          (response) => FinvuConsentRequestDetailInfo(
-            consentId: response.consentId,
-            consentHandle: response.consentHandleId,
-            financialInformationUser: FinvuFinancialInformationEntityInfo(
-              id: response.financialInformationUser.id,
-              name: response.financialInformationUser.name,
+    return _invokeNative(
+      _nativeFinvuManager
+          .getConsentRequestDetails(handleId)
+          .then(
+            (response) => FinvuConsentRequestDetailInfo(
+              consentId: response.consentId,
+              consentHandle: response.consentHandleId,
+              financialInformationUser: FinvuFinancialInformationEntityInfo(
+                id: response.financialInformationUser.id,
+                name: response.financialInformationUser.name,
+              ),
+              consentPurposeInfo: FinvuConsentPurposeInfo(
+                code: response.consentPurposeInfo.code,
+                text: response.consentPurposeInfo.text,
+              ),
+              consentDisplayDescriptions:
+                  response.consentDisplayDescriptions.nonNulls.toList(),
+              dataDateTimeRange: FinvuDateTimeRange(
+                from: DateTime.tryParse(response.dataDateTimeRange.from),
+                to: DateTime.tryParse(response.dataDateTimeRange.to),
+              ),
+              consentDateTimeRange: FinvuDateTimeRange(
+                from: DateTime.tryParse(response.consentDateTimeRange.from),
+                to: DateTime.tryParse(response.consentDateTimeRange.to),
+              ),
+              consentDataFrequency: FinvuConsentDataFrequency(
+                unit: response.consentDataFrequency.unit,
+                value: response.consentDataFrequency.value,
+              ),
+              consentDataLifePeriod: FinvuConsentDataLifePeriod(
+                unit: response.consentDataLifePeriod.unit,
+                value: response.consentDataLifePeriod.value,
+              ),
+              fiTypes: response.fiTypes?.nonNulls.toList(),
             ),
-            consentPurposeInfo: FinvuConsentPurposeInfo(
-              code: response.consentPurposeInfo.code,
-              text: response.consentPurposeInfo.text,
-            ),
-            consentDisplayDescriptions:
-                response.consentDisplayDescriptions.nonNulls.toList(),
-            dataDateTimeRange: FinvuDateTimeRange(
-              from: DateTime.tryParse(response.dataDateTimeRange.from),
-              to: DateTime.tryParse(response.dataDateTimeRange.to),
-            ),
-            consentDateTimeRange: FinvuDateTimeRange(
-              from: DateTime.tryParse(response.consentDateTimeRange.from),
-              to: DateTime.tryParse(response.consentDateTimeRange.to),
-            ),
-            consentDataFrequency: FinvuConsentDataFrequency(
-              unit: response.consentDataFrequency.unit,
-              value: response.consentDataFrequency.value,
-            ),
-            consentDataLifePeriod: FinvuConsentDataLifePeriod(
-              unit: response.consentDataLifePeriod.unit,
-              value: response.consentDataLifePeriod.value,
-            ),
-            fiTypes: response.fiTypes?.nonNulls.toList(),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'getConsentRequestDetails',
+    );
   }
 
   /// API to approve the consent request raised by FIU with Finvu AA. This API
@@ -541,25 +543,24 @@ class FinvuManager {
         )
         .toList();
 
-    return _nativeFinvuManager
-        .approveConsentRequest(nativeConsentInfo, nativeLinkedAccounts)
-        .then(
-          (response) => FinvuProcessConsentRequestResponse(
-            consentIntentId: response.consentIntentId,
-            consentInfo: response.consentInfo?.nonNulls
-                .map(
-                  (consentInfo) => FinvuConsentInfo(
-                    consentId: consentInfo.consentId,
-                    fipId: consentInfo.fipId,
-                  ),
-                )
-                .toList(),
+    return _invokeNative(
+      _nativeFinvuManager
+          .approveConsentRequest(nativeConsentInfo, nativeLinkedAccounts)
+          .then(
+            (response) => FinvuProcessConsentRequestResponse(
+              consentIntentId: response.consentIntentId,
+              consentInfo: response.consentInfo?.nonNulls
+                  .map(
+                    (consentInfo) => FinvuConsentInfo(
+                      consentId: consentInfo.consentId,
+                      fipId: consentInfo.fipId,
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'approveConsentRequest',
+    );
   }
 
   /// API to deny the consent request raised by FIU with Finvu AA.
@@ -598,25 +599,24 @@ class FinvuManager {
       ),
     );
 
-    return _nativeFinvuManager
-        .denyConsentRequest(nativeConsentInfo)
-        .then(
-          (response) => FinvuProcessConsentRequestResponse(
-            consentIntentId: response.consentIntentId,
-            consentInfo: response.consentInfo?.nonNulls
-                .map(
-                  (consentInfo) => FinvuConsentInfo(
-                    consentId: consentInfo.consentId,
-                    fipId: consentInfo.fipId,
-                  ),
-                )
-                .toList(),
+    return _invokeNative(
+      _nativeFinvuManager
+          .denyConsentRequest(nativeConsentInfo)
+          .then(
+            (response) => FinvuProcessConsentRequestResponse(
+              consentIntentId: response.consentIntentId,
+              consentInfo: response.consentInfo?.nonNulls
+                  .map(
+                    (consentInfo) => FinvuConsentInfo(
+                      consentId: consentInfo.consentId,
+                      fipId: consentInfo.fipId,
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'denyConsentRequest',
+    );
   }
 
   /// API to revoke the consent for the given [consentId] and [consent].
@@ -632,12 +632,10 @@ class FinvuManager {
             fipId: fipDetails.fipId, fipName: fipDetails.fipName)
         : null;
 
-    return _nativeFinvuManager
-        .revokeConsent(consentId, nativeAA, nativeFipDetails)
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(
+      _nativeFinvuManager.revokeConsent(consentId, nativeAA, nativeFipDetails),
+      'revokeConsent',
+    );
   }
 
   /// Gets the status of the [handleId] after it has been approved by the user.
@@ -657,17 +655,16 @@ class FinvuManager {
   Future<FinvuConsentHandleStatusResponse> getConsentHandleStatus(
     String handleId,
   ) {
-    return _nativeFinvuManager
-        .getConsentHandleStatus(handleId)
-        .then(
-          (response) => FinvuConsentHandleStatusResponse(
-            status: response.status,
+    return _invokeNative(
+      _nativeFinvuManager
+          .getConsentHandleStatus(handleId)
+          .then(
+            (response) => FinvuConsentHandleStatusResponse(
+              status: response.status,
+            ),
           ),
-        )
-        .catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+      'getConsentHandleStatus',
+    );
   }
 
   /// API to logout the user from the Finvu AA server. This will invalidate the
@@ -675,10 +672,7 @@ class FinvuManager {
   ///
   /// Throws [FinvuException] on failure.
   Future<void> logout() {
-    return _nativeFinvuManager.logout().catchError(
-          (e) => throw FinvuException.from(e),
-          test: _platformExceptionTest,
-        );
+    return _invokeNative(_nativeFinvuManager.logout(), 'logout');
   }
 
   /// Add an event listener to receive SDK events

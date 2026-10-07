@@ -427,6 +427,120 @@ class NativeEventDefinition {
   List<String?>? fiTypes;
 }
 
+// MFA login. Native steps carry functions, which cannot cross the bridge, so the
+// plugin keeps each live step on the native side and Dart refers to it by stepId.
+
+class NativeMfaLoginParams {
+  NativeMfaLoginParams({
+    this.mobileNumber,
+    this.username,
+    this.consentHandle,
+    this.handleId,
+    this.clientContext,
+    this.firstFactor,
+    this.secondFactor,
+    required this.useEncConsent,
+    this.finalizeSession,
+    required this.selectFactorChoice,
+  });
+
+  String? mobileNumber;
+  String? username;
+  String? consentHandle;
+  String? handleId;
+  Map<String?, Object?>? clientContext;
+  List<String?>? firstFactor;
+  List<String?>? secondFactor;
+  bool useEncConsent;
+  bool? finalizeSession;
+  bool selectFactorChoice;
+}
+
+class NativeMfaValidationError {
+  NativeMfaValidationError({
+    required this.code,
+    required this.message,
+    this.attemptsRemaining,
+  });
+
+  String code;
+  String message;
+  int? attemptsRemaining;
+}
+
+class NativeMfaResendInfo {
+  NativeMfaResendInfo({
+    this.resendAfterSeconds,
+    this.resendsRemaining,
+  });
+
+  int? resendAfterSeconds;
+  int? resendsRemaining;
+}
+
+class NativeMfaSession {
+  NativeMfaSession({
+    this.userId,
+    this.sessionId,
+    this.csid,
+  });
+
+  String? userId;
+  String? sessionId;
+  String? csid;
+}
+
+class NativeMfaError {
+  NativeMfaError({
+    required this.code,
+    required this.message,
+  });
+
+  String code;
+  String message;
+}
+
+/// One MFA step. Fields are set according to [action]:
+/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin
+/// silent: factor
+/// selectFactor: availableFactors
+/// complete: resultStatus ('authenticated' with session, 'failed' with error), hasRetry
+class NativeMfaStep {
+  NativeMfaStep({
+    required this.stepId,
+    required this.action,
+    this.factor,
+    this.requirement,
+    this.purpose,
+    this.pinLength,
+    this.validationError,
+    this.resendInfo,
+    this.availableFactors,
+    this.resultStatus,
+    this.session,
+    this.error,
+    required this.hasResend,
+    required this.hasForgotPin,
+    required this.hasRetry,
+  });
+
+  String stepId;
+  String action;
+  String? factor;
+  String? requirement;
+  String? purpose;
+  int? pinLength;
+  NativeMfaValidationError? validationError;
+  NativeMfaResendInfo? resendInfo;
+  List<String?>? availableFactors;
+  String? resultStatus;
+  NativeMfaSession? session;
+  NativeMfaError? error;
+  bool hasResend;
+  bool hasForgotPin;
+  bool hasRetry;
+}
+
 @FlutterApi()
 abstract class NativeFinvuEventListener {
   void onEvent(NativeFinvuEvent event);
@@ -540,4 +654,28 @@ abstract class NativeFinvuManager {
   void registerAliases(Map<String, String> aliases);
 
   void track(String eventName, Map<String?, Object?>? params);
+
+  // MFA login. Every call resolves to a step; failures come back as a 'complete'
+  // step with resultStatus 'failed'.
+
+  @async
+  NativeMfaStep mfaLogin(NativeMfaLoginParams params);
+
+  @async
+  NativeMfaStep mfaSubmit(String stepId, String value);
+
+  @async
+  NativeMfaStep mfaResend(String stepId);
+
+  @async
+  NativeMfaStep mfaForgotPin(String stepId);
+
+  @async
+  NativeMfaStep mfaSelectFactor(String stepId, String factor);
+
+  @async
+  NativeMfaStep mfaAwaitCompletion(String stepId);
+
+  @async
+  NativeMfaStep mfaRetry(String stepId);
 }

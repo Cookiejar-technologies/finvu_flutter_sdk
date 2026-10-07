@@ -24,6 +24,9 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
     // Event listener properties
     private var eventListener: FinvuEventListener? = nil
     private var nativeEventListener: NativeFinvuEventListener? = nil
+    
+    // Keeps live MFA steps for Flutter (see FinvuMfaBridge)
+    private let mfaBridge = FinvuMfaBridge()
     private var binaryMessenger: FlutterBinaryMessenger? = nil
     
     public override init() {
@@ -50,15 +53,29 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
     }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let messenger : FlutterBinaryMessenger = registrar.messenger()
-        let api : NativeFinvuManager & NSObjectProtocol = FinvuFlutterSdkPlugin.init()
-        NativeFinvuManagerSetup.setUp(binaryMessenger: messenger, api: api);
-        
-        // Store binary messenger and create native event listener
-        if let plugin = api as? FinvuFlutterSdkPlugin {
-            plugin.binaryMessenger = messenger
-            plugin.nativeEventListener = NativeFinvuEventListener(binaryMessenger: messenger)
+        let instance = FinvuFlutterSdkPlugin()
+        registrar.publish(instance)
+        instance.registerPigeonChannels(with: registrar.messenger())
+    }
+
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        unregisterPigeonChannels(from: registrar.messenger())
+        if let listener = eventListener {
+            FinvuManager.shared.removeEventListener(listener)
+            eventListener = nil
         }
+        nativeEventListener = nil
+        binaryMessenger = nil
+    }
+
+    private func registerPigeonChannels(with messenger: FlutterBinaryMessenger) {
+        binaryMessenger = messenger
+        NativeFinvuManagerSetup.setUp(binaryMessenger: messenger, api: self)
+        nativeEventListener = NativeFinvuEventListener(binaryMessenger: messenger)
+    }
+
+    private func unregisterPigeonChannels(from messenger: FlutterBinaryMessenger) {
+        NativeFinvuManagerSetup.setUp(binaryMessenger: messenger, api: nil)
     }
     
     func initialize(config: NativeFinvuConfig) throws {
@@ -513,6 +530,7 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
     }
     
     func logout(completion: @escaping (Result<Void, Error>) -> Void) {
+        mfaBridge.clear()
         FinvuManager.shared.logout { error in
             if let error = error {
                 let errorCode = error.errorCode ?? ""
@@ -650,5 +668,37 @@ final class FinvuClientConfig: FinvuConfig {
         self.finvuEndpoint = finvuEndpoint
         self.certificatePins = certificatePins
         self.finvuSnaAuthConfig = finvuSnaAuthConfig
+    }
+}
+
+// MARK: - MFA login
+
+extension FinvuFlutterSdkPlugin {
+    func mfaLogin(params: NativeMfaLoginParams, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.login(params, completion: completion)
+    }
+
+    func mfaSubmit(stepId: String, value: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.submit(stepId: stepId, value: value, completion: completion)
+    }
+
+    func mfaResend(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.resend(stepId: stepId, completion: completion)
+    }
+
+    func mfaForgotPin(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.forgotPin(stepId: stepId, completion: completion)
+    }
+
+    func mfaSelectFactor(stepId: String, factor: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.selectFactor(stepId: stepId, factor: factor, completion: completion)
+    }
+
+    func mfaAwaitCompletion(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.awaitCompletion(stepId: stepId, completion: completion)
+    }
+
+    func mfaRetry(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.retry(stepId: stepId, completion: completion)
     }
 }

@@ -18,6 +18,8 @@ import NativeFinancialInformationEntity
 import NativeFinvuConfig
 import NativeFinvuError
 import NativeFinvuManager
+import NativeMfaLoginParams
+import NativeMfaStep
 import NativeHandleInfo
 import NativeLinkedAccountDetailsInfo
 import NativeLinkedAccountInfo
@@ -109,6 +111,9 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   // Coroutine scope for native calls
   private var scope: CoroutineScope? = null
 
+  // Keeps live MFA steps for Flutter (see FinvuMfaBridge)
+  private val mfaBridge = FinvuMfaBridge { scope }
+
   // Event listener for forwarding events to Flutter
   private var eventListener: FinvuEventListener? = null
   private var nativeEventListener: NativeFinvuEventListener? = null
@@ -127,22 +132,29 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
     }
   }
 
+  private fun registerPigeonChannels(messenger: BinaryMessenger) {
+    NativeFinvuManager.setUp(messenger, this)
+    nativeEventListener = NativeFinvuEventListener(messenger)
+  }
+
+  private fun unregisterPigeonChannels(messenger: BinaryMessenger) {
+    NativeFinvuManager.setUp(messenger, null)
+  }
+
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     appContext = binding.applicationContext
     flutterPluginBinding = binding
     binaryMessenger = binding.binaryMessenger
     scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    NativeFinvuManager.setUp(binding.binaryMessenger, this)
-    
-    // Create event listener instance for forwarding events to Flutter
-    nativeEventListener = NativeFinvuEventListener(binding.binaryMessenger)
+    registerPigeonChannels(binding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    NativeFinvuManager.setUp(binding.binaryMessenger, null)
+    unregisterPigeonChannels(binding.binaryMessenger)
     scope?.cancel()
     scope = null
     binaryMessenger = null
+    flutterPluginBinding = null
     // Remove event listener from Android SDK
     eventListener?.let { FinvuManager.shared.removeEventListener(it) }
     eventListener = null
@@ -153,10 +165,21 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
+    ensurePigeonChannelsRegistered()
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     activity = binding.activity
+    ensurePigeonChannelsRegistered()
+  }
+
+  /**
+   * Recovery after engine churn: re-registers the handlers on this engine's messenger whenever an
+   * Activity (re)attaches, so a handler cleared by another engine's detach is restored.
+   * setUp replaces the handler, so calling this repeatedly is safe.
+   */
+  private fun ensurePigeonChannelsRegistered() {
+    binaryMessenger?.let { registerPigeonChannels(it) }
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
@@ -713,6 +736,7 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
   }
 
   override fun logout(callback: (Result<Unit>) -> Unit) {
+    mfaBridge.clear()
     FinvuManager.shared.logout {
       if (it.isFailure) {
         val error = it.exceptionOrNull() as FinvuException
@@ -794,4 +818,27 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
     val paramsMap: Map<String, Any?> = params?.mapKeys { it.key ?: "" }?.mapValues { it.value } ?: emptyMap()
     FinvuEventTracker.shared.track(eventName, paramsMap)
   }
+
+  // MFA login
+
+  override fun mfaLogin(params: NativeMfaLoginParams, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.login(params, callback)
+
+  override fun mfaSubmit(stepId: String, value: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.submit(stepId, value, callback)
+
+  override fun mfaResend(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.resend(stepId, callback)
+
+  override fun mfaForgotPin(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.forgotPin(stepId, callback)
+
+  override fun mfaSelectFactor(stepId: String, factor: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.selectFactor(stepId, factor, callback)
+
+  override fun mfaAwaitCompletion(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.awaitCompletion(stepId, callback)
+
+  override fun mfaRetry(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.retry(stepId, callback)
 }

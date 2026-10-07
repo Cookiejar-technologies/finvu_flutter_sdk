@@ -1303,6 +1303,278 @@ struct NativeEventDefinition: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaLoginParams: Hashable {
+  var mobileNumber: String? = nil
+  var username: String? = nil
+  var consentHandle: String? = nil
+  var handleId: String? = nil
+  var clientContext: [String?: Any?]? = nil
+  var firstFactor: [String?]? = nil
+  var secondFactor: [String?]? = nil
+  var useEncConsent: Bool
+  var finalizeSession: Bool? = nil
+  var selectFactorChoice: Bool
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaLoginParams? {
+    let mobileNumber: String? = nilOrValue(pigeonVar_list[0])
+    let username: String? = nilOrValue(pigeonVar_list[1])
+    let consentHandle: String? = nilOrValue(pigeonVar_list[2])
+    let handleId: String? = nilOrValue(pigeonVar_list[3])
+    let clientContext: [String?: Any?]? = nilOrValue(pigeonVar_list[4])
+    let firstFactor: [String?]? = nilOrValue(pigeonVar_list[5])
+    let secondFactor: [String?]? = nilOrValue(pigeonVar_list[6])
+    let useEncConsent = pigeonVar_list[7] as! Bool
+    let finalizeSession: Bool? = nilOrValue(pigeonVar_list[8])
+    let selectFactorChoice = pigeonVar_list[9] as! Bool
+
+    return NativeMfaLoginParams(
+      mobileNumber: mobileNumber,
+      username: username,
+      consentHandle: consentHandle,
+      handleId: handleId,
+      clientContext: clientContext,
+      firstFactor: firstFactor,
+      secondFactor: secondFactor,
+      useEncConsent: useEncConsent,
+      finalizeSession: finalizeSession,
+      selectFactorChoice: selectFactorChoice
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      mobileNumber,
+      username,
+      consentHandle,
+      handleId,
+      clientContext,
+      firstFactor,
+      secondFactor,
+      useEncConsent,
+      finalizeSession,
+      selectFactorChoice,
+    ]
+  }
+  static func == (lhs: NativeMfaLoginParams, rhs: NativeMfaLoginParams) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaValidationError: Hashable {
+  var code: String
+  var message: String
+  var attemptsRemaining: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaValidationError? {
+    let code = pigeonVar_list[0] as! String
+    let message = pigeonVar_list[1] as! String
+    let attemptsRemaining: Int64? = nilOrValue(pigeonVar_list[2])
+
+    return NativeMfaValidationError(
+      code: code,
+      message: message,
+      attemptsRemaining: attemptsRemaining
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      code,
+      message,
+      attemptsRemaining,
+    ]
+  }
+  static func == (lhs: NativeMfaValidationError, rhs: NativeMfaValidationError) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaResendInfo: Hashable {
+  var resendAfterSeconds: Int64? = nil
+  var resendsRemaining: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaResendInfo? {
+    let resendAfterSeconds: Int64? = nilOrValue(pigeonVar_list[0])
+    let resendsRemaining: Int64? = nilOrValue(pigeonVar_list[1])
+
+    return NativeMfaResendInfo(
+      resendAfterSeconds: resendAfterSeconds,
+      resendsRemaining: resendsRemaining
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      resendAfterSeconds,
+      resendsRemaining,
+    ]
+  }
+  static func == (lhs: NativeMfaResendInfo, rhs: NativeMfaResendInfo) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaSession: Hashable {
+  var userId: String? = nil
+  var sessionId: String? = nil
+  var csid: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaSession? {
+    let userId: String? = nilOrValue(pigeonVar_list[0])
+    let sessionId: String? = nilOrValue(pigeonVar_list[1])
+    let csid: String? = nilOrValue(pigeonVar_list[2])
+
+    return NativeMfaSession(
+      userId: userId,
+      sessionId: sessionId,
+      csid: csid
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      userId,
+      sessionId,
+      csid,
+    ]
+  }
+  static func == (lhs: NativeMfaSession, rhs: NativeMfaSession) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaError: Hashable {
+  var code: String
+  var message: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaError? {
+    let code = pigeonVar_list[0] as! String
+    let message = pigeonVar_list[1] as! String
+
+    return NativeMfaError(
+      code: code,
+      message: message
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      code,
+      message,
+    ]
+  }
+  static func == (lhs: NativeMfaError, rhs: NativeMfaError) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
+/// One MFA step. Fields are set according to [action]:
+/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin
+/// silent: factor
+/// selectFactor: availableFactors
+/// complete: resultStatus ('authenticated' with session, 'failed' with error), hasRetry
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeMfaStep: Hashable {
+  var stepId: String
+  var action: String
+  var factor: String? = nil
+  var requirement: String? = nil
+  var purpose: String? = nil
+  var pinLength: Int64? = nil
+  var validationError: NativeMfaValidationError? = nil
+  var resendInfo: NativeMfaResendInfo? = nil
+  var availableFactors: [String?]? = nil
+  var resultStatus: String? = nil
+  var session: NativeMfaSession? = nil
+  var error: NativeMfaError? = nil
+  var hasResend: Bool
+  var hasForgotPin: Bool
+  var hasRetry: Bool
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeMfaStep? {
+    let stepId = pigeonVar_list[0] as! String
+    let action = pigeonVar_list[1] as! String
+    let factor: String? = nilOrValue(pigeonVar_list[2])
+    let requirement: String? = nilOrValue(pigeonVar_list[3])
+    let purpose: String? = nilOrValue(pigeonVar_list[4])
+    let pinLength: Int64? = nilOrValue(pigeonVar_list[5])
+    let validationError: NativeMfaValidationError? = nilOrValue(pigeonVar_list[6])
+    let resendInfo: NativeMfaResendInfo? = nilOrValue(pigeonVar_list[7])
+    let availableFactors: [String?]? = nilOrValue(pigeonVar_list[8])
+    let resultStatus: String? = nilOrValue(pigeonVar_list[9])
+    let session: NativeMfaSession? = nilOrValue(pigeonVar_list[10])
+    let error: NativeMfaError? = nilOrValue(pigeonVar_list[11])
+    let hasResend = pigeonVar_list[12] as! Bool
+    let hasForgotPin = pigeonVar_list[13] as! Bool
+    let hasRetry = pigeonVar_list[14] as! Bool
+
+    return NativeMfaStep(
+      stepId: stepId,
+      action: action,
+      factor: factor,
+      requirement: requirement,
+      purpose: purpose,
+      pinLength: pinLength,
+      validationError: validationError,
+      resendInfo: resendInfo,
+      availableFactors: availableFactors,
+      resultStatus: resultStatus,
+      session: session,
+      error: error,
+      hasResend: hasResend,
+      hasForgotPin: hasForgotPin,
+      hasRetry: hasRetry
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      stepId,
+      action,
+      factor,
+      requirement,
+      purpose,
+      pinLength,
+      validationError,
+      resendInfo,
+      availableFactors,
+      resultStatus,
+      session,
+      error,
+      hasResend,
+      hasForgotPin,
+      hasRetry,
+    ]
+  }
+  static func == (lhs: NativeMfaStep, rhs: NativeMfaStep) -> Bool {
+    return deepEqualsNativeFinvuManager(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNativeFinvuManager(value: toList(), hasher: &hasher)
+  }
+}
+
 private class NativeFinvuManagerPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -1380,6 +1652,18 @@ private class NativeFinvuManagerPigeonCodecReader: FlutterStandardReader {
       return NativeFinvuEvent.fromList(self.readValue() as! [Any?])
     case 163:
       return NativeEventDefinition.fromList(self.readValue() as! [Any?])
+    case 164:
+      return NativeMfaLoginParams.fromList(self.readValue() as! [Any?])
+    case 165:
+      return NativeMfaValidationError.fromList(self.readValue() as! [Any?])
+    case 166:
+      return NativeMfaResendInfo.fromList(self.readValue() as! [Any?])
+    case 167:
+      return NativeMfaSession.fromList(self.readValue() as! [Any?])
+    case 168:
+      return NativeMfaError.fromList(self.readValue() as! [Any?])
+    case 169:
+      return NativeMfaStep.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -1493,6 +1777,24 @@ private class NativeFinvuManagerPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeEventDefinition {
       super.writeByte(163)
       super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaLoginParams {
+      super.writeByte(164)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaValidationError {
+      super.writeByte(165)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaResendInfo {
+      super.writeByte(166)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaSession {
+      super.writeByte(167)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaError {
+      super.writeByte(168)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMfaStep {
+      super.writeByte(169)
+      super.writeValue(value.toList())
     } else {
       super.writeValue(value)
     }
@@ -1578,6 +1880,13 @@ protocol NativeFinvuManager {
   func registerCustomEvents(events: [String: NativeEventDefinition]) throws
   func registerAliases(aliases: [String: String]) throws
   func track(eventName: String, params: [String?: Any?]?) throws
+  func mfaLogin(params: NativeMfaLoginParams, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaSubmit(stepId: String, value: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaResend(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaForgotPin(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaSelectFactor(stepId: String, factor: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaAwaitCompletion(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
+  func mfaRetry(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2055,6 +2364,127 @@ class NativeFinvuManagerSetup {
       }
     } else {
       trackChannel.setMessageHandler(nil)
+    }
+    let mfaLoginChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaLogin\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaLoginChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let paramsArg = args[0] as! NativeMfaLoginParams
+        api.mfaLogin(params: paramsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaLoginChannel.setMessageHandler(nil)
+    }
+    let mfaSubmitChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSubmit\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaSubmitChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        let valueArg = args[1] as! String
+        api.mfaSubmit(stepId: stepIdArg, value: valueArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaSubmitChannel.setMessageHandler(nil)
+    }
+    let mfaResendChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaResend\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaResendChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        api.mfaResend(stepId: stepIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaResendChannel.setMessageHandler(nil)
+    }
+    let mfaForgotPinChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaForgotPin\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaForgotPinChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        api.mfaForgotPin(stepId: stepIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaForgotPinChannel.setMessageHandler(nil)
+    }
+    let mfaSelectFactorChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSelectFactor\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaSelectFactorChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        let factorArg = args[1] as! String
+        api.mfaSelectFactor(stepId: stepIdArg, factor: factorArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaSelectFactorChannel.setMessageHandler(nil)
+    }
+    let mfaAwaitCompletionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaAwaitCompletion\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaAwaitCompletionChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        api.mfaAwaitCompletion(stepId: stepIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaAwaitCompletionChannel.setMessageHandler(nil)
+    }
+    let mfaRetryChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaRetry\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      mfaRetryChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let stepIdArg = args[0] as! String
+        api.mfaRetry(stepId: stepIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      mfaRetryChannel.setMessageHandler(nil)
     }
   }
 }

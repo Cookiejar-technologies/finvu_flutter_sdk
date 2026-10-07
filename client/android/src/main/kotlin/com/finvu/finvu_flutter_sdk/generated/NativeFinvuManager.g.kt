@@ -1279,6 +1279,269 @@ data class NativeEventDefinition (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeMfaLoginParams (
+  val mobileNumber: String? = null,
+  val username: String? = null,
+  val consentHandle: String? = null,
+  val handleId: String? = null,
+  val clientContext: Map<String?, Any?>? = null,
+  val firstFactor: List<String?>? = null,
+  val secondFactor: List<String?>? = null,
+  val useEncConsent: Boolean,
+  val finalizeSession: Boolean? = null,
+  val selectFactorChoice: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaLoginParams {
+      val mobileNumber = pigeonVar_list[0] as String?
+      val username = pigeonVar_list[1] as String?
+      val consentHandle = pigeonVar_list[2] as String?
+      val handleId = pigeonVar_list[3] as String?
+      val clientContext = pigeonVar_list[4] as Map<String?, Any?>?
+      val firstFactor = pigeonVar_list[5] as List<String?>?
+      val secondFactor = pigeonVar_list[6] as List<String?>?
+      val useEncConsent = pigeonVar_list[7] as Boolean
+      val finalizeSession = pigeonVar_list[8] as Boolean?
+      val selectFactorChoice = pigeonVar_list[9] as Boolean
+      return NativeMfaLoginParams(mobileNumber, username, consentHandle, handleId, clientContext, firstFactor, secondFactor, useEncConsent, finalizeSession, selectFactorChoice)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      mobileNumber,
+      username,
+      consentHandle,
+      handleId,
+      clientContext,
+      firstFactor,
+      secondFactor,
+      useEncConsent,
+      finalizeSession,
+      selectFactorChoice,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaLoginParams) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeMfaValidationError (
+  val code: String,
+  val message: String,
+  val attemptsRemaining: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaValidationError {
+      val code = pigeonVar_list[0] as String
+      val message = pigeonVar_list[1] as String
+      val attemptsRemaining = pigeonVar_list[2] as Long?
+      return NativeMfaValidationError(code, message, attemptsRemaining)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      code,
+      message,
+      attemptsRemaining,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaValidationError) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeMfaResendInfo (
+  val resendAfterSeconds: Long? = null,
+  val resendsRemaining: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaResendInfo {
+      val resendAfterSeconds = pigeonVar_list[0] as Long?
+      val resendsRemaining = pigeonVar_list[1] as Long?
+      return NativeMfaResendInfo(resendAfterSeconds, resendsRemaining)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      resendAfterSeconds,
+      resendsRemaining,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaResendInfo) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeMfaSession (
+  val userId: String? = null,
+  val sessionId: String? = null,
+  val csid: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaSession {
+      val userId = pigeonVar_list[0] as String?
+      val sessionId = pigeonVar_list[1] as String?
+      val csid = pigeonVar_list[2] as String?
+      return NativeMfaSession(userId, sessionId, csid)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      userId,
+      sessionId,
+      csid,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaSession) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeMfaError (
+  val code: String,
+  val message: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaError {
+      val code = pigeonVar_list[0] as String
+      val message = pigeonVar_list[1] as String
+      return NativeMfaError(code, message)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      code,
+      message,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaError) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/**
+ * One MFA step. Fields are set according to [action]:
+ * input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin
+ * silent: factor
+ * selectFactor: availableFactors
+ * complete: resultStatus ('authenticated' with session, 'failed' with error), hasRetry
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class NativeMfaStep (
+  val stepId: String,
+  val action: String,
+  val factor: String? = null,
+  val requirement: String? = null,
+  val purpose: String? = null,
+  val pinLength: Long? = null,
+  val validationError: NativeMfaValidationError? = null,
+  val resendInfo: NativeMfaResendInfo? = null,
+  val availableFactors: List<String?>? = null,
+  val resultStatus: String? = null,
+  val session: NativeMfaSession? = null,
+  val error: NativeMfaError? = null,
+  val hasResend: Boolean,
+  val hasForgotPin: Boolean,
+  val hasRetry: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeMfaStep {
+      val stepId = pigeonVar_list[0] as String
+      val action = pigeonVar_list[1] as String
+      val factor = pigeonVar_list[2] as String?
+      val requirement = pigeonVar_list[3] as String?
+      val purpose = pigeonVar_list[4] as String?
+      val pinLength = pigeonVar_list[5] as Long?
+      val validationError = pigeonVar_list[6] as NativeMfaValidationError?
+      val resendInfo = pigeonVar_list[7] as NativeMfaResendInfo?
+      val availableFactors = pigeonVar_list[8] as List<String?>?
+      val resultStatus = pigeonVar_list[9] as String?
+      val session = pigeonVar_list[10] as NativeMfaSession?
+      val error = pigeonVar_list[11] as NativeMfaError?
+      val hasResend = pigeonVar_list[12] as Boolean
+      val hasForgotPin = pigeonVar_list[13] as Boolean
+      val hasRetry = pigeonVar_list[14] as Boolean
+      return NativeMfaStep(stepId, action, factor, requirement, purpose, pinLength, validationError, resendInfo, availableFactors, resultStatus, session, error, hasResend, hasForgotPin, hasRetry)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      stepId,
+      action,
+      factor,
+      requirement,
+      purpose,
+      pinLength,
+      validationError,
+      resendInfo,
+      availableFactors,
+      resultStatus,
+      session,
+      error,
+      hasResend,
+      hasForgotPin,
+      hasRetry,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeMfaStep) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NativeFinvuManagerPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class NativeFinvuManagerPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -1457,6 +1720,36 @@ private open class NativeFinvuManagerPigeonCodec : StandardMessageCodec() {
           NativeEventDefinition.fromList(it)
         }
       }
+      164.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaLoginParams.fromList(it)
+        }
+      }
+      165.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaValidationError.fromList(it)
+        }
+      }
+      166.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaResendInfo.fromList(it)
+        }
+      }
+      167.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaSession.fromList(it)
+        }
+      }
+      168.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaError.fromList(it)
+        }
+      }
+      169.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeMfaStep.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -1602,6 +1895,30 @@ private open class NativeFinvuManagerPigeonCodec : StandardMessageCodec() {
         stream.write(163)
         writeValue(stream, value.toList())
       }
+      is NativeMfaLoginParams -> {
+        stream.write(164)
+        writeValue(stream, value.toList())
+      }
+      is NativeMfaValidationError -> {
+        stream.write(165)
+        writeValue(stream, value.toList())
+      }
+      is NativeMfaResendInfo -> {
+        stream.write(166)
+        writeValue(stream, value.toList())
+      }
+      is NativeMfaSession -> {
+        stream.write(167)
+        writeValue(stream, value.toList())
+      }
+      is NativeMfaError -> {
+        stream.write(168)
+        writeValue(stream, value.toList())
+      }
+      is NativeMfaStep -> {
+        stream.write(169)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -1665,6 +1982,13 @@ interface NativeFinvuManager {
   fun registerCustomEvents(events: Map<String, NativeEventDefinition>)
   fun registerAliases(aliases: Map<String, String>)
   fun track(eventName: String, params: Map<String?, Any?>?)
+  fun mfaLogin(params: NativeMfaLoginParams, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaSubmit(stepId: String, value: String, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaResend(stepId: String, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaForgotPin(stepId: String, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaSelectFactor(stepId: String, factor: String, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaAwaitCompletion(stepId: String, callback: (Result<NativeMfaStep>) -> Unit)
+  fun mfaRetry(stepId: String, callback: (Result<NativeMfaStep>) -> Unit)
 
   companion object {
     /** The codec used by NativeFinvuManager. */
@@ -2220,6 +2544,148 @@ interface NativeFinvuManager {
               NativeFinvuManagerPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaLogin$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val paramsArg = args[0] as NativeMfaLoginParams
+            api.mfaLogin(paramsArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSubmit$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            val valueArg = args[1] as String
+            api.mfaSubmit(stepIdArg, valueArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaResend$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            api.mfaResend(stepIdArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaForgotPin$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            api.mfaForgotPin(stepIdArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSelectFactor$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            val factorArg = args[1] as String
+            api.mfaSelectFactor(stepIdArg, factorArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaAwaitCompletion$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            api.mfaAwaitCompletion(stepIdArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaRetry$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val stepIdArg = args[0] as String
+            api.mfaRetry(stepIdArg) { result: Result<NativeMfaStep> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NativeFinvuManagerPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)
