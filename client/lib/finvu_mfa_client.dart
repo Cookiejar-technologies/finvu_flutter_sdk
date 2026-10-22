@@ -64,6 +64,13 @@ class MfaClient {
                   code: validationError.code,
                   message: validationError.message,
                   attemptsRemaining: validationError.attemptsRemaining,
+                  support: validationError.support != null
+                      ? RecoverySupport(
+                          email: validationError.support!.email,
+                          phone: validationError.support!.phone,
+                          message: validationError.support!.message,
+                        )
+                      : null,
                 )
               : null,
           resendInfo: resendInfo != null
@@ -78,6 +85,30 @@ class MfaClient {
               : null,
           forgotPin: step.hasForgotPin
               ? () => _call(() => _native.mfaForgotPin(stepId))
+              : null,
+          recovery: _toRecovery(step.recovery),
+          cancel: step.hasCancel
+              ? () => _call(() => _native.mfaCancel(stepId))
+              : null,
+          switchMethod: step.hasSwitchMethod
+              ? (method) => _call(() => _native.mfaSwitchMethod(stepId, method))
+              : null,
+          selectEmail: step.hasSelectEmail
+              ? (emailHash) =>
+                  _call(() => _native.mfaSelectEmail(stepId, emailHash))
+              : null,
+          onSubmitAccounts: step.recovery != null
+              ? (accounts) => _call(() => _native.mfaSubmitAccounts(
+                    stepId,
+                    accounts
+                        .map((a) => native.NativeMfaRecoveryAccountAnswer(
+                              fipId: a.fipId,
+                              last4: a.last4,
+                              fiType: a.fiType,
+                              accType: a.accType,
+                            ))
+                        .toList(),
+                  ))
               : null,
         );
 
@@ -118,6 +149,29 @@ class MfaClient {
               : null,
         );
     }
+  }
+
+  RecoveryInfo? _toRecovery(native.NativeMfaRecovery? recovery) {
+    if (recovery == null) return null;
+    return RecoveryInfo(
+      method: recovery.method,
+      availableMethods: recovery.availableMethods.whereType<String>().toList(),
+      accounts: recovery.accounts
+          ?.whereType<native.NativeMfaRecoveryAccount>()
+          .map((a) => RecoveryAccount(fipId: a.fipId, fiType: a.fiType, accType: a.accType))
+          .toList(),
+      minAccountsRequired: recovery.minAccountsRequired,
+      emails: recovery.emails
+          ?.whereType<native.NativeMfaRecoveryEmail>()
+          .map((e) => RecoveryEmail(
+                emailHash: e.emailHash,
+                maskedEmail: e.maskedEmail,
+                primary: e.primary,
+                selected: e.selected,
+              ))
+          .toList(),
+      expiresAt: recovery.expiresAt,
+    );
   }
 
   MfaCompleteStep _failed(String code, String? message) => MfaCompleteStep(

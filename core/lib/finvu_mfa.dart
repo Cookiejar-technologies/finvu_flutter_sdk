@@ -17,21 +17,91 @@ class MfaConstants {
   static const factorPin = 'pin';
   static const factorDeviceBinding = 'deviceBinding';
 
+  /// PIN recovery proof methods (the factor of a pinRecovery proof step).
+  static const factorQuestionLinkedAccount = 'questionLinkedAccount';
+  static const factorQuestionPan = 'questionPan';
+  static const factorEmailOtp = 'emailOtp';
+  static const factorEmailLink = 'emailLink';
+
   static const requirementVerification = 'verification';
   static const requirementEnrollment = 'enrollment';
 
+  static const purposePinRecovery = 'pinRecovery';
+
+  @Deprecated('Forgot PIN now runs PIN recovery; steps use purposePinRecovery')
   static const purposePinReset = 'pinReset';
 
   static const statusAuthenticated = 'authenticated';
   static const statusFailed = 'failed';
 }
 
+/// [support] is set on PIN recovery errors that carry contact details, such as noRecoveryOptions.
 class ValidationError {
-  ValidationError({required this.code, required this.message, this.attemptsRemaining});
+  ValidationError({required this.code, required this.message, this.attemptsRemaining, this.support});
 
   final String code;
   final String message;
   final int? attemptsRemaining;
+  final RecoverySupport? support;
+}
+
+/// Who to contact when PIN recovery is not possible. Only the keys the backend sent are set.
+class RecoverySupport {
+  RecoverySupport({this.email, this.phone, this.message});
+
+  final String? email;
+  final String? phone;
+  final String? message;
+}
+
+/// A linked account to answer for, on a questionLinkedAccount proof step. Never carries digits.
+class RecoveryAccount {
+  RecoveryAccount({required this.fipId, this.fiType, this.accType});
+
+  final String fipId;
+  final String? fiType;
+  final String? accType;
+}
+
+/// A verified email the code or link can go to. [selected] marks where the current one went.
+class RecoveryEmail {
+  RecoveryEmail({required this.emailHash, required this.maskedEmail, required this.primary, required this.selected});
+
+  final String emailHash;
+  final String maskedEmail;
+  final bool primary;
+  final bool selected;
+}
+
+/// One answer on a questionLinkedAccount proof step: the account and its last 4 digits.
+class RecoveryAccountAnswer {
+  RecoveryAccountAnswer({required this.fipId, required this.last4, this.fiType, this.accType});
+
+  final String fipId;
+  final String last4;
+  final String? fiType;
+  final String? accType;
+}
+
+/// PIN recovery data on a step. On a proof step: [method], [availableMethods], plus [accounts] and
+/// [minAccountsRequired] (questionLinkedAccount) or [emails] (emailOtp, emailLink). On the new PIN
+/// step: [expiresAt], when the backend sent the recovery window's deadline.
+class RecoveryInfo {
+  RecoveryInfo({
+    this.method,
+    this.availableMethods = const [],
+    this.accounts,
+    this.minAccountsRequired,
+    this.emails,
+    this.expiresAt,
+  });
+
+  final String? method;
+  final List<String> availableMethods;
+  final List<RecoveryAccount>? accounts;
+  final int? minAccountsRequired;
+  final List<RecoveryEmail>? emails;
+  final String? expiresAt;
 }
 
 class MfaError {
@@ -112,7 +182,8 @@ sealed class MfaStep {
   String get action;
 }
 
-/// Ask the user for an OTP or PIN, then call [submit].
+/// Ask the user for a value, then call [submit]: an OTP or PIN, or during PIN recovery
+/// ([purpose] 'pinRecovery') the proof for [factor] or the new PIN.
 class MfaInputStep extends MfaStep {
   MfaInputStep({
     required this.factor,
@@ -124,18 +195,25 @@ class MfaInputStep extends MfaStep {
     required Future<MfaStep> Function(String value) onSubmit,
     this.resend,
     this.forgotPin,
-  }) : _onSubmit = onSubmit;
+    this.recovery,
+    this.cancel,
+    this.switchMethod,
+    this.selectEmail,
+    Future<MfaStep> Function(List<RecoveryAccountAnswer> accounts)? onSubmitAccounts,
+  })  : _onSubmit = onSubmit,
+        _onSubmitAccounts = onSubmitAccounts;
 
   @override
   String get action => MfaConstants.actionInput;
 
-  /// 'otp' or 'pin'
+  /// 'otp' or 'pin'; on a PIN recovery proof step 'questionLinkedAccount', 'questionPan',
+  /// 'emailOtp' or 'emailLink'
   final String factor;
 
   /// 'verification' or 'enrollment'
   final String requirement;
 
-  /// 'pinReset' during forgot PIN, otherwise null
+  /// 'pinRecovery' during forgot PIN, otherwise null
   final String? purpose;
   final InputSpec? inputSpec;
 
@@ -143,15 +221,33 @@ class MfaInputStep extends MfaStep {
   final ValidationError? validationError;
   final ResendInfo? resendInfo;
 
-  /// OTP only.
+  /// OTP, and the emailOtp / emailLink proof steps (sends the code or link again).
   final MfaAction? resend;
 
-  /// PIN verification only (not during a PIN reset).
+  /// PIN verification only. Starts PIN recovery.
   final MfaAction? forgotPin;
 
+  /// PIN recovery steps only. See [RecoveryInfo].
+  final RecoveryInfo? recovery;
+
+  /// PIN recovery steps only. Back to the PIN verification step, with no error.
+  final MfaAction? cancel;
+
+  /// Proof step with more than one method. Takes a value from recovery.availableMethods.
+  final Future<MfaStep> Function(String method)? switchMethod;
+
+  /// emailOtp / emailLink proof steps. Takes an emailHash from recovery.emails.
+  final Future<MfaStep> Function(String emailHash)? selectEmail;
+
   final Future<MfaStep> Function(String value) _onSubmit;
+  final Future<MfaStep> Function(List<RecoveryAccountAnswer> accounts)? _onSubmitAccounts;
 
   Future<MfaStep> submit(String value) => _onSubmit(value);
+
+  /// questionLinkedAccount proof step: the last 4 digits of each account. With exactly one
+  /// account, [submit] with just the digits works too. Other steps return themselves unchanged.
+  Future<MfaStep> submitAccounts(List<RecoveryAccountAnswer> accounts) =>
+      _onSubmitAccounts?.call(accounts) ?? Future.value(this);
 }
 
 /// Work runs without user input (SNA, device binding prompt). Show a loader and await [completion].

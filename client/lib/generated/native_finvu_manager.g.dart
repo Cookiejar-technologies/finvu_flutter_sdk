@@ -1924,6 +1924,7 @@ class NativeMfaValidationError {
     required this.code,
     required this.message,
     this.attemptsRemaining,
+    this.support,
   });
 
   String code;
@@ -1932,11 +1933,14 @@ class NativeMfaValidationError {
 
   int? attemptsRemaining;
 
+  NativeMfaRecoverySupport? support;
+
   List<Object?> _toList() {
     return <Object?>[
       code,
       message,
       attemptsRemaining,
+      support,
     ];
   }
 
@@ -1949,6 +1953,7 @@ class NativeMfaValidationError {
       code: result[0]! as String,
       message: result[1]! as String,
       attemptsRemaining: result[2] as int?,
+      support: result[3] as NativeMfaRecoverySupport?,
     );
   }
 
@@ -1956,6 +1961,287 @@ class NativeMfaValidationError {
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
     if (other is! NativeMfaValidationError || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class NativeMfaRecoverySupport {
+  NativeMfaRecoverySupport({
+    this.email,
+    this.phone,
+    this.message,
+  });
+
+  String? email;
+
+  String? phone;
+
+  String? message;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      email,
+      phone,
+      message,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeMfaRecoverySupport decode(Object result) {
+    result as List<Object?>;
+    return NativeMfaRecoverySupport(
+      email: result[0] as String?,
+      phone: result[1] as String?,
+      message: result[2] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeMfaRecoverySupport || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class NativeMfaRecoveryAccount {
+  NativeMfaRecoveryAccount({
+    required this.fipId,
+    this.fiType,
+    this.accType,
+  });
+
+  String fipId;
+
+  String? fiType;
+
+  String? accType;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      fipId,
+      fiType,
+      accType,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeMfaRecoveryAccount decode(Object result) {
+    result as List<Object?>;
+    return NativeMfaRecoveryAccount(
+      fipId: result[0]! as String,
+      fiType: result[1] as String?,
+      accType: result[2] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeMfaRecoveryAccount || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class NativeMfaRecoveryEmail {
+  NativeMfaRecoveryEmail({
+    required this.emailHash,
+    required this.maskedEmail,
+    required this.primary,
+    required this.selected,
+  });
+
+  String emailHash;
+
+  String maskedEmail;
+
+  bool primary;
+
+  bool selected;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      emailHash,
+      maskedEmail,
+      primary,
+      selected,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeMfaRecoveryEmail decode(Object result) {
+    result as List<Object?>;
+    return NativeMfaRecoveryEmail(
+      emailHash: result[0]! as String,
+      maskedEmail: result[1]! as String,
+      primary: result[2]! as bool,
+      selected: result[3]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeMfaRecoveryEmail || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+/// PIN recovery data on a step (see the native RecoveryInfo).
+class NativeMfaRecovery {
+  NativeMfaRecovery({
+    this.method,
+    required this.availableMethods,
+    this.accounts,
+    this.minAccountsRequired,
+    this.emails,
+    this.expiresAt,
+  });
+
+  String? method;
+
+  List<String?> availableMethods;
+
+  List<NativeMfaRecoveryAccount?>? accounts;
+
+  int? minAccountsRequired;
+
+  List<NativeMfaRecoveryEmail?>? emails;
+
+  String? expiresAt;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      method,
+      availableMethods,
+      accounts,
+      minAccountsRequired,
+      emails,
+      expiresAt,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeMfaRecovery decode(Object result) {
+    result as List<Object?>;
+    return NativeMfaRecovery(
+      method: result[0] as String?,
+      availableMethods: (result[1] as List<Object?>?)!.cast<String?>(),
+      accounts: (result[2] as List<Object?>?)?.cast<NativeMfaRecoveryAccount?>(),
+      minAccountsRequired: result[3] as int?,
+      emails: (result[4] as List<Object?>?)?.cast<NativeMfaRecoveryEmail?>(),
+      expiresAt: result[5] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeMfaRecovery || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
+class NativeMfaRecoveryAccountAnswer {
+  NativeMfaRecoveryAccountAnswer({
+    required this.fipId,
+    required this.last4,
+    this.fiType,
+    this.accType,
+  });
+
+  String fipId;
+
+  String last4;
+
+  String? fiType;
+
+  String? accType;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      fipId,
+      last4,
+      fiType,
+      accType,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NativeMfaRecoveryAccountAnswer decode(Object result) {
+    result as List<Object?>;
+    return NativeMfaRecoveryAccountAnswer(
+      fipId: result[0]! as String,
+      last4: result[1]! as String,
+      fiType: result[2] as String?,
+      accType: result[3] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeMfaRecoveryAccountAnswer || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -2114,7 +2400,8 @@ class NativeMfaError {
 }
 
 /// One MFA step. Fields are set according to [action]:
-/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin
+/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin,
+///   and during PIN recovery: recovery, hasCancel, hasSwitchMethod, hasSelectEmail
 /// silent: factor
 /// selectFactor: availableFactors
 /// complete: resultStatus ('authenticated' with session, 'failed' with error), hasRetry
@@ -2132,9 +2419,13 @@ class NativeMfaStep {
     this.resultStatus,
     this.session,
     this.error,
+    this.recovery,
     required this.hasResend,
     required this.hasForgotPin,
     required this.hasRetry,
+    required this.hasCancel,
+    required this.hasSwitchMethod,
+    required this.hasSelectEmail,
   });
 
   String stepId;
@@ -2161,11 +2452,19 @@ class NativeMfaStep {
 
   NativeMfaError? error;
 
+  NativeMfaRecovery? recovery;
+
   bool hasResend;
 
   bool hasForgotPin;
 
   bool hasRetry;
+
+  bool hasCancel;
+
+  bool hasSwitchMethod;
+
+  bool hasSelectEmail;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -2181,9 +2480,13 @@ class NativeMfaStep {
       resultStatus,
       session,
       error,
+      recovery,
       hasResend,
       hasForgotPin,
       hasRetry,
+      hasCancel,
+      hasSwitchMethod,
+      hasSelectEmail,
     ];
   }
 
@@ -2205,9 +2508,13 @@ class NativeMfaStep {
       resultStatus: result[9] as String?,
       session: result[10] as NativeMfaSession?,
       error: result[11] as NativeMfaError?,
-      hasResend: result[12]! as bool,
-      hasForgotPin: result[13]! as bool,
-      hasRetry: result[14]! as bool,
+      recovery: result[12] as NativeMfaRecovery?,
+      hasResend: result[13]! as bool,
+      hasForgotPin: result[14]! as bool,
+      hasRetry: result[15]! as bool,
+      hasCancel: result[16]! as bool,
+      hasSwitchMethod: result[17]! as bool,
+      hasSelectEmail: result[18]! as bool,
     );
   }
 
@@ -2348,17 +2655,32 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is NativeMfaValidationError) {
       buffer.putUint8(165);
       writeValue(buffer, value.encode());
-    }    else if (value is NativeMfaResendInfo) {
+    }    else if (value is NativeMfaRecoverySupport) {
       buffer.putUint8(166);
       writeValue(buffer, value.encode());
-    }    else if (value is NativeMfaSession) {
+    }    else if (value is NativeMfaRecoveryAccount) {
       buffer.putUint8(167);
       writeValue(buffer, value.encode());
-    }    else if (value is NativeMfaError) {
+    }    else if (value is NativeMfaRecoveryEmail) {
       buffer.putUint8(168);
       writeValue(buffer, value.encode());
-    }    else if (value is NativeMfaStep) {
+    }    else if (value is NativeMfaRecovery) {
       buffer.putUint8(169);
+      writeValue(buffer, value.encode());
+    }    else if (value is NativeMfaRecoveryAccountAnswer) {
+      buffer.putUint8(170);
+      writeValue(buffer, value.encode());
+    }    else if (value is NativeMfaResendInfo) {
+      buffer.putUint8(171);
+      writeValue(buffer, value.encode());
+    }    else if (value is NativeMfaSession) {
+      buffer.putUint8(172);
+      writeValue(buffer, value.encode());
+    }    else if (value is NativeMfaError) {
+      buffer.putUint8(173);
+      writeValue(buffer, value.encode());
+    }    else if (value is NativeMfaStep) {
+      buffer.putUint8(174);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -2444,12 +2766,22 @@ class _PigeonCodec extends StandardMessageCodec {
       case 165: 
         return NativeMfaValidationError.decode(readValue(buffer)!);
       case 166: 
-        return NativeMfaResendInfo.decode(readValue(buffer)!);
+        return NativeMfaRecoverySupport.decode(readValue(buffer)!);
       case 167: 
-        return NativeMfaSession.decode(readValue(buffer)!);
+        return NativeMfaRecoveryAccount.decode(readValue(buffer)!);
       case 168: 
-        return NativeMfaError.decode(readValue(buffer)!);
+        return NativeMfaRecoveryEmail.decode(readValue(buffer)!);
       case 169: 
+        return NativeMfaRecovery.decode(readValue(buffer)!);
+      case 170: 
+        return NativeMfaRecoveryAccountAnswer.decode(readValue(buffer)!);
+      case 171: 
+        return NativeMfaResendInfo.decode(readValue(buffer)!);
+      case 172: 
+        return NativeMfaSession.decode(readValue(buffer)!);
+      case 173: 
+        return NativeMfaError.decode(readValue(buffer)!);
+      case 174: 
         return NativeMfaStep.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -3428,6 +3760,118 @@ class NativeFinvuManager {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[stepId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as NativeMfaStep?)!;
+    }
+  }
+
+  Future<NativeMfaStep> mfaSubmitAccounts(String stepId, List<NativeMfaRecoveryAccountAnswer> accounts) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSubmitAccounts$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[stepId, accounts]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as NativeMfaStep?)!;
+    }
+  }
+
+  Future<NativeMfaStep> mfaCancel(String stepId) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaCancel$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[stepId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as NativeMfaStep?)!;
+    }
+  }
+
+  Future<NativeMfaStep> mfaSwitchMethod(String stepId, String method) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSwitchMethod$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[stepId, method]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as NativeMfaStep?)!;
+    }
+  }
+
+  Future<NativeMfaStep> mfaSelectEmail(String stepId, String emailHash) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.finvu_flutter_sdk.NativeFinvuManager.mfaSelectEmail$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[stepId, emailHash]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

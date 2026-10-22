@@ -19,6 +19,7 @@ import NativeFinvuConfig
 import NativeFinvuError
 import NativeFinvuManager
 import NativeMfaLoginParams
+import NativeMfaRecoveryAccountAnswer
 import NativeMfaStep
 import NativeHandleInfo
 import NativeLinkedAccountDetailsInfo
@@ -841,4 +842,19 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
 
   override fun mfaRetry(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
     mfaBridge.retry(stepId, callback)
+
+  override fun mfaSubmitAccounts(
+    stepId: String,
+    accounts: List<NativeMfaRecoveryAccountAnswer>,
+    callback: (Result<NativeMfaStep>) -> Unit
+  ) = mfaBridge.submitAccounts(stepId, accounts, callback)
+
+  override fun mfaCancel(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.cancel(stepId, callback)
+
+  override fun mfaSwitchMethod(stepId: String, method: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.switchMethod(stepId, method, callback)
+
+  override fun mfaSelectEmail(stepId: String, emailHash: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    mfaBridge.selectEmail(stepId, emailHash, callback)
 }

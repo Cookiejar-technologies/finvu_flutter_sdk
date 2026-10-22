@@ -701,4 +701,20 @@ extension FinvuFlutterSdkPlugin {
     func mfaRetry(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
         mfaBridge.retry(stepId: stepId, completion: completion)
     }
+
+    func mfaSubmitAccounts(stepId: String, accounts: [NativeMfaRecoveryAccountAnswer], completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.submitAccounts(stepId: stepId, accounts: accounts, completion: completion)
+    }
+
+    func mfaCancel(stepId: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.cancel(stepId: stepId, completion: completion)
+    }
+
+    func mfaSwitchMethod(stepId: String, method: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.switchMethod(stepId: stepId, method: method, completion: completion)
+    }
+
+    func mfaSelectEmail(stepId: String, emailHash: String, completion: @escaping (Result<NativeMfaStep, Error>) -> Void) {
+        mfaBridge.selectEmail(stepId: stepId, emailHash: emailHash, completion: completion)
+    }
 }

@@ -74,6 +74,32 @@ final class FinvuMfaBridge {
         }
     }
 
+    func submitAccounts(stepId: String, accounts: [NativeMfaRecoveryAccountAnswer], completion: @escaping Completion) {
+        let answers = accounts.map { RecoveryAccountAnswer(fipId: $0.fipId, last4: $0.last4, fiType: $0.fiType, accType: $0.accType) }
+        withStep(stepId, as: MfaInputStep.self, completion) { await $0.submit(accounts: answers) }
+    }
+
+    func cancel(stepId: String, completion: @escaping Completion) {
+        withStep(stepId, as: MfaInputStep.self, completion) { step in
+            guard let cancel = step.cancel else { return nil }
+            return await cancel()
+        }
+    }
+
+    func switchMethod(stepId: String, method: String, completion: @escaping Completion) {
+        withStep(stepId, as: MfaInputStep.self, completion) { step in
+            guard let switchMethod = step.switchMethod else { return nil }
+            return await switchMethod(method)
+        }
+    }
+
+    func selectEmail(stepId: String, emailHash: String, completion: @escaping Completion) {
+        withStep(stepId, as: MfaInputStep.self, completion) { step in
+            guard let selectEmail = step.selectEmail else { return nil }
+            return await selectEmail(emailHash)
+        }
+    }
+
     // MARK: - Helpers
 
     /// Runs `block` on the step with `stepId`; a nil result means the action is not available on it.
@@ -119,24 +145,33 @@ final class FinvuMfaBridge {
                 requirement: input.requirement,
                 purpose: input.purpose,
                 pinLength: input.inputSpec.map { Int64($0.pinLength) },
-                validationError: input.validationError.map {
-                    NativeMfaValidationError(code: $0.code, message: $0.message,
-                                             attemptsRemaining: $0.attemptsRemaining.map { Int64($0) })
+                validationError: input.validationError.map { error in
+                    NativeMfaValidationError(code: error.code, message: error.message,
+                                             attemptsRemaining: error.attemptsRemaining.map { Int64($0) },
+                                             support: error.support.map {
+                                                 NativeMfaRecoverySupport(email: $0.email, phone: $0.phone, message: $0.message)
+                                             })
                 },
                 resendInfo: input.resendInfo.map {
                     NativeMfaResendInfo(resendAfterSeconds: $0.resendAfterSeconds.map { Int64($0) },
                                         resendsRemaining: $0.resendsRemaining.map { Int64($0) })
                 },
+                recovery: input.recovery.map { toNativeRecovery($0) },
                 hasResend: input.resend != nil,
                 hasForgotPin: input.forgotPin != nil,
-                hasRetry: false
+                hasRetry: false,
+                hasCancel: input.cancel != nil,
+                hasSwitchMethod: input.switchMethod != nil,
+                hasSelectEmail: input.selectEmail != nil
             )
         case let silent as MfaSilentStep:
             return NativeMfaStep(stepId: stepId, action: silent.action, factor: silent.factor,
-                                 hasResend: false, hasForgotPin: false, hasRetry: false)
+                                 hasResend: false, hasForgotPin: false, hasRetry: false,
+                                 hasCancel: false, hasSwitchMethod: false, hasSelectEmail: false)
         case let select as MfaSelectFactorStep:
             return NativeMfaStep(stepId: stepId, action: select.action, availableFactors: select.availableFactors,
-                                 hasResend: false, hasForgotPin: false, hasRetry: false)
+                                 hasResend: false, hasForgotPin: false, hasRetry: false,
+                                 hasCancel: false, hasSwitchMethod: false, hasSelectEmail: false)
         case let complete as MfaCompleteStep:
             return NativeMfaStep(
                 stepId: stepId,
@@ -148,7 +183,10 @@ final class FinvuMfaBridge {
                 error: complete.result.error.map { NativeMfaError(code: $0.code, message: $0.message) },
                 hasResend: false,
                 hasForgotPin: false,
-                hasRetry: complete.retry != nil
+                hasRetry: complete.retry != nil,
+                hasCancel: false,
+                hasSwitchMethod: false,
+                hasSelectEmail: false
             )
         default:
             return failed(code: "unexpectedStep", message: "Unexpected MFA step")
@@ -159,6 +197,20 @@ final class FinvuMfaBridge {
     private func failed(code: String, message: String) -> NativeMfaStep {
         NativeMfaStep(stepId: UUID().uuidString, action: "complete", resultStatus: "failed",
                       error: NativeMfaError(code: code, message: message),
-                      hasResend: false, hasForgotPin: false, hasRetry: false)
+                      hasResend: false, hasForgotPin: false, hasRetry: false,
+                      hasCancel: false, hasSwitchMethod: false, hasSelectEmail: false)
+    }
+
+    private func toNativeRecovery(_ recovery: RecoveryInfo) -> NativeMfaRecovery {
+        NativeMfaRecovery(
+            method: recovery.method,
+            availableMethods: recovery.availableMethods,
+            accounts: recovery.accounts?.map { NativeMfaRecoveryAccount(fipId: $0.fipId, fiType: $0.fiType, accType: $0.accType) },
+            minAccountsRequired: recovery.minAccountsRequired.map { Int64($0) },
+            emails: recovery.emails?.map {
+                NativeMfaRecoveryEmail(emailHash: $0.emailHash, maskedEmail: $0.maskedEmail, primary: $0.primary, selected: $0.selected)
+            },
+            expiresAt: recovery.expiresAt
+        )
     }
 }

@@ -2,6 +2,11 @@ package com.finvu.finvu_flutter_sdk
 
 import NativeMfaError
 import NativeMfaLoginParams
+import NativeMfaRecovery
+import NativeMfaRecoveryAccount
+import NativeMfaRecoveryAccountAnswer
+import NativeMfaRecoveryEmail
+import NativeMfaRecoverySupport
 import NativeMfaResendInfo
 import NativeMfaSession
 import NativeMfaStep
@@ -13,6 +18,8 @@ import com.finvu.android.mfa.MfaInputStep
 import com.finvu.android.mfa.MfaSelectFactorStep
 import com.finvu.android.mfa.MfaSilentStep
 import com.finvu.android.mfa.MfaStep
+import com.finvu.android.mfa.RecoveryAccountAnswer
+import com.finvu.android.mfa.RecoveryInfo
 import com.finvu.android.mfa.SupportedFactors
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -77,6 +84,26 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
       step.retry?.invoke() ?: return@withStep null
     }
 
+  fun submitAccounts(stepId: String, accounts: List<NativeMfaRecoveryAccountAnswer>, callback: (Result<NativeMfaStep>) -> Unit) =
+    withStep<MfaInputStep>(stepId, callback) { step ->
+      step.submit(accounts.map { RecoveryAccountAnswer(it.fipId, it.last4, it.fiType, it.accType) })
+    }
+
+  fun cancel(stepId: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    withStep<MfaInputStep>(stepId, callback) { step ->
+      step.cancel?.invoke() ?: return@withStep null
+    }
+
+  fun switchMethod(stepId: String, method: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    withStep<MfaInputStep>(stepId, callback) { step ->
+      step.switchMethod?.invoke(method) ?: return@withStep null
+    }
+
+  fun selectEmail(stepId: String, emailHash: String, callback: (Result<NativeMfaStep>) -> Unit) =
+    withStep<MfaInputStep>(stepId, callback) { step ->
+      step.selectEmail?.invoke(emailHash) ?: return@withStep null
+    }
+
   /** Runs [block] on the step with [stepId]; a null result means the action is not available on it. */
   private inline fun <reified T : MfaStep> withStep(
     stepId: String,
@@ -116,15 +143,24 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
         requirement = step.requirement,
         purpose = step.purpose,
         pinLength = step.inputSpec?.pinLength?.toLong(),
-        validationError = step.validationError?.let {
-          NativeMfaValidationError(it.code, it.message, it.attemptsRemaining?.toLong())
+        validationError = step.validationError?.let { error ->
+          NativeMfaValidationError(
+            error.code,
+            error.message,
+            error.attemptsRemaining?.toLong(),
+            error.support?.let { NativeMfaRecoverySupport(it.email, it.phone, it.message) }
+          )
         },
         resendInfo = step.resendInfo?.let {
           NativeMfaResendInfo(it.resendAfterSeconds?.toLong(), it.resendsRemaining?.toLong())
         },
+        recovery = step.recovery?.let { toNativeRecovery(it) },
         hasResend = step.resend != null,
         hasForgotPin = step.forgotPin != null,
-        hasRetry = false
+        hasRetry = false,
+        hasCancel = step.cancel != null,
+        hasSwitchMethod = step.switchMethod != null,
+        hasSelectEmail = step.selectEmail != null
       )
       is MfaSilentStep -> NativeMfaStep(
         stepId = stepId,
@@ -132,7 +168,10 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
         factor = step.factor,
         hasResend = false,
         hasForgotPin = false,
-        hasRetry = false
+        hasRetry = false,
+        hasCancel = false,
+        hasSwitchMethod = false,
+        hasSelectEmail = false
       )
       is MfaSelectFactorStep -> NativeMfaStep(
         stepId = stepId,
@@ -140,7 +179,10 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
         availableFactors = step.availableFactors,
         hasResend = false,
         hasForgotPin = false,
-        hasRetry = false
+        hasRetry = false,
+        hasCancel = false,
+        hasSwitchMethod = false,
+        hasSelectEmail = false
       )
       is MfaCompleteStep -> NativeMfaStep(
         stepId = stepId,
@@ -150,10 +192,22 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
         error = step.result.error?.let { NativeMfaError(it.code, it.message) },
         hasResend = false,
         hasForgotPin = false,
-        hasRetry = step.retry != null
+        hasRetry = step.retry != null,
+        hasCancel = false,
+        hasSwitchMethod = false,
+        hasSelectEmail = false
       )
     }
   }
+
+  private fun toNativeRecovery(recovery: RecoveryInfo) = NativeMfaRecovery(
+    method = recovery.method,
+    availableMethods = recovery.availableMethods,
+    accounts = recovery.accounts?.map { NativeMfaRecoveryAccount(it.fipId, it.fiType, it.accType) },
+    minAccountsRequired = recovery.minAccountsRequired?.toLong(),
+    emails = recovery.emails?.map { NativeMfaRecoveryEmail(it.emailHash, it.maskedEmail, it.primary, it.selected) },
+    expiresAt = recovery.expiresAt
+  )
 
   /** A failed 'complete' step built on this side (not stored: it has no retry). */
   private fun failed(code: String, message: String) = NativeMfaStep(
@@ -163,6 +217,9 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
     error = NativeMfaError(code, message),
     hasResend = false,
     hasForgotPin = false,
-    hasRetry = false
+    hasRetry = false,
+    hasCancel = false,
+    hasSwitchMethod = false,
+    hasSelectEmail = false
   )
 }

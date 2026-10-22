@@ -461,11 +461,84 @@ class NativeMfaValidationError {
     required this.code,
     required this.message,
     this.attemptsRemaining,
+    this.support,
   });
 
   String code;
   String message;
   int? attemptsRemaining;
+  NativeMfaRecoverySupport? support;
+}
+
+class NativeMfaRecoverySupport {
+  NativeMfaRecoverySupport({
+    this.email,
+    this.phone,
+    this.message,
+  });
+
+  String? email;
+  String? phone;
+  String? message;
+}
+
+class NativeMfaRecoveryAccount {
+  NativeMfaRecoveryAccount({
+    required this.fipId,
+    this.fiType,
+    this.accType,
+  });
+
+  String fipId;
+  String? fiType;
+  String? accType;
+}
+
+class NativeMfaRecoveryEmail {
+  NativeMfaRecoveryEmail({
+    required this.emailHash,
+    required this.maskedEmail,
+    required this.primary,
+    required this.selected,
+  });
+
+  String emailHash;
+  String maskedEmail;
+  bool primary;
+  bool selected;
+}
+
+/// PIN recovery data on a step (see the native RecoveryInfo).
+class NativeMfaRecovery {
+  NativeMfaRecovery({
+    this.method,
+    required this.availableMethods,
+    this.accounts,
+    this.minAccountsRequired,
+    this.emails,
+    this.expiresAt,
+  });
+
+  String? method;
+  List<String?> availableMethods;
+  List<NativeMfaRecoveryAccount?>? accounts;
+  int? minAccountsRequired;
+  List<NativeMfaRecoveryEmail?>? emails;
+  String? expiresAt;
+}
+
+class NativeMfaRecoveryAccountAnswer {
+  NativeMfaRecoveryAccountAnswer({
+    required this.fipId,
+    required this.last4,
+    this.fiType,
+    this.accType,
+  });
+
+  String fipId;
+  String last4;
+  String? fiType;
+  String? accType;
 }
 
 class NativeMfaResendInfo {
@@ -501,7 +574,8 @@ class NativeMfaError {
 }
 
 /// One MFA step. Fields are set according to [action]:
-/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin
+/// input: factor, requirement, purpose, pinLength, validationError, resendInfo, hasResend, hasForgotPin,
+///   and during PIN recovery: recovery, hasCancel, hasSwitchMethod, hasSelectEmail
 /// silent: factor
 /// selectFactor: availableFactors
 /// complete: resultStatus ('authenticated' with session, 'failed' with error), hasRetry
@@ -519,9 +593,13 @@ class NativeMfaStep {
     this.resultStatus,
     this.session,
     this.error,
+    this.recovery,
     required this.hasResend,
     required this.hasForgotPin,
     required this.hasRetry,
+    required this.hasCancel,
+    required this.hasSwitchMethod,
+    required this.hasSelectEmail,
   });
 
   String stepId;
@@ -536,9 +614,13 @@ class NativeMfaStep {
   String? resultStatus;
   NativeMfaSession? session;
   NativeMfaError? error;
+  NativeMfaRecovery? recovery;
   bool hasResend;
   bool hasForgotPin;
   bool hasRetry;
+  bool hasCancel;
+  bool hasSwitchMethod;
+  bool hasSelectEmail;
 }
 
 @FlutterApi()
@@ -678,4 +760,18 @@ abstract class NativeFinvuManager {
 
   @async
   NativeMfaStep mfaRetry(String stepId);
+
+  // PIN recovery (steps with purpose 'pinRecovery')
+
+  @async
+  NativeMfaStep mfaSubmitAccounts(String stepId, List<NativeMfaRecoveryAccountAnswer> accounts);
+
+  @async
+  NativeMfaStep mfaCancel(String stepId);
+
+  @async
+  NativeMfaStep mfaSwitchMethod(String stepId, String method);
+
+  @async
+  NativeMfaStep mfaSelectEmail(String stepId, String emailHash);
 }
