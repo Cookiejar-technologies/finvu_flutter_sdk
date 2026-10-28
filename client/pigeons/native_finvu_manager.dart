@@ -442,6 +442,7 @@ class NativeMfaLoginParams {
     required this.useEncConsent,
     this.finalizeSession,
     required this.selectFactorChoice,
+    this.emailId,
   });
 
   String? mobileNumber;
@@ -454,6 +455,7 @@ class NativeMfaLoginParams {
   bool useEncConsent;
   bool? finalizeSession;
   bool selectFactorChoice;
+  String? emailId;
 }
 
 class NativeMfaValidationError {
@@ -556,11 +558,15 @@ class NativeMfaSession {
     this.userId,
     this.sessionId,
     this.csid,
+    this.newUser,
+    this.hasLinkedAccounts,
   });
 
   String? userId;
   String? sessionId;
   String? csid;
+  bool? newUser;
+  bool? hasLinkedAccounts;
 }
 
 class NativeMfaError {
@@ -594,6 +600,8 @@ class NativeMfaStep {
     this.session,
     this.error,
     this.recovery,
+    this.newUser,
+    this.hasLinkedAccounts,
     required this.hasResend,
     required this.hasForgotPin,
     required this.hasRetry,
@@ -615,6 +623,8 @@ class NativeMfaStep {
   NativeMfaSession? session;
   NativeMfaError? error;
   NativeMfaRecovery? recovery;
+  bool? newUser;
+  bool? hasLinkedAccounts;
   bool hasResend;
   bool hasForgotPin;
   bool hasRetry;

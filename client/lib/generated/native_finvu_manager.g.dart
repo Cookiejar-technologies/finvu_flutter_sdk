@@ -1845,6 +1845,7 @@ class NativeMfaLoginParams {
     required this.useEncConsent,
     this.finalizeSession,
     required this.selectFactorChoice,
+    this.emailId,
   });
 
   String? mobileNumber;
@@ -1867,6 +1868,8 @@ class NativeMfaLoginParams {
 
   bool selectFactorChoice;
 
+  String? emailId;
+
   List<Object?> _toList() {
     return <Object?>[
       mobileNumber,
@@ -1879,6 +1882,7 @@ class NativeMfaLoginParams {
       useEncConsent,
       finalizeSession,
       selectFactorChoice,
+      emailId,
     ];
   }
 
@@ -1898,6 +1902,7 @@ class NativeMfaLoginParams {
       useEncConsent: result[7]! as bool,
       finalizeSession: result[8] as bool?,
       selectFactorChoice: result[9]! as bool,
+      emailId: result[10] as String?,
     );
   }
 
@@ -2307,6 +2312,8 @@ class NativeMfaSession {
     this.userId,
     this.sessionId,
     this.csid,
+    this.newUser,
+    this.hasLinkedAccounts,
   });
 
   String? userId;
@@ -2315,11 +2322,17 @@ class NativeMfaSession {
 
   String? csid;
 
+  bool? newUser;
+
+  bool? hasLinkedAccounts;
+
   List<Object?> _toList() {
     return <Object?>[
       userId,
       sessionId,
       csid,
+      newUser,
+      hasLinkedAccounts,
     ];
   }
 
@@ -2332,6 +2345,8 @@ class NativeMfaSession {
       userId: result[0] as String?,
       sessionId: result[1] as String?,
       csid: result[2] as String?,
+      newUser: result[3] as bool?,
+      hasLinkedAccounts: result[4] as bool?,
     );
   }
 
@@ -2420,6 +2435,8 @@ class NativeMfaStep {
     this.session,
     this.error,
     this.recovery,
+    this.newUser,
+    this.hasLinkedAccounts,
     required this.hasResend,
     required this.hasForgotPin,
     required this.hasRetry,
@@ -2454,6 +2471,10 @@ class NativeMfaStep {
 
   NativeMfaRecovery? recovery;
 
+  bool? newUser;
+
+  bool? hasLinkedAccounts;
+
   bool hasResend;
 
   bool hasForgotPin;
@@ -2481,6 +2502,8 @@ class NativeMfaStep {
       session,
       error,
       recovery,
+      newUser,
+      hasLinkedAccounts,
       hasResend,
       hasForgotPin,
       hasRetry,
@@ -2509,12 +2532,14 @@ class NativeMfaStep {
       session: result[10] as NativeMfaSession?,
       error: result[11] as NativeMfaError?,
       recovery: result[12] as NativeMfaRecovery?,
-      hasResend: result[13]! as bool,
-      hasForgotPin: result[14]! as bool,
-      hasRetry: result[15]! as bool,
-      hasCancel: result[16]! as bool,
-      hasSwitchMethod: result[17]! as bool,
-      hasSelectEmail: result[18]! as bool,
+      newUser: result[13] as bool?,
+      hasLinkedAccounts: result[14] as bool?,
+      hasResend: result[15]! as bool,
+      hasForgotPin: result[16]! as bool,
+      hasRetry: result[17]! as bool,
+      hasCancel: result[18]! as bool,
+      hasSwitchMethod: result[19]! as bool,
+      hasSelectEmail: result[20]! as bool,
     );
   }
 

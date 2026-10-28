@@ -1315,6 +1315,7 @@ struct NativeMfaLoginParams: Hashable {
   var useEncConsent: Bool
   var finalizeSession: Bool? = nil
   var selectFactorChoice: Bool
+  var emailId: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -1329,6 +1330,7 @@ struct NativeMfaLoginParams: Hashable {
     let useEncConsent = pigeonVar_list[7] as! Bool
     let finalizeSession: Bool? = nilOrValue(pigeonVar_list[8])
     let selectFactorChoice = pigeonVar_list[9] as! Bool
+    let emailId: String? = nilOrValue(pigeonVar_list[10])
 
     return NativeMfaLoginParams(
       mobileNumber: mobileNumber,
@@ -1340,7 +1342,8 @@ struct NativeMfaLoginParams: Hashable {
       secondFactor: secondFactor,
       useEncConsent: useEncConsent,
       finalizeSession: finalizeSession,
-      selectFactorChoice: selectFactorChoice
+      selectFactorChoice: selectFactorChoice,
+      emailId: emailId
     )
   }
   func toList() -> [Any?] {
@@ -1355,6 +1358,7 @@ struct NativeMfaLoginParams: Hashable {
       useEncConsent,
       finalizeSession,
       selectFactorChoice,
+      emailId,
     ]
   }
   static func == (lhs: NativeMfaLoginParams, rhs: NativeMfaLoginParams) -> Bool {
@@ -1622,6 +1626,8 @@ struct NativeMfaSession: Hashable {
   var userId: String? = nil
   var sessionId: String? = nil
   var csid: String? = nil
+  var newUser: Bool? = nil
+  var hasLinkedAccounts: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -1629,11 +1635,15 @@ struct NativeMfaSession: Hashable {
     let userId: String? = nilOrValue(pigeonVar_list[0])
     let sessionId: String? = nilOrValue(pigeonVar_list[1])
     let csid: String? = nilOrValue(pigeonVar_list[2])
+    let newUser: Bool? = nilOrValue(pigeonVar_list[3])
+    let hasLinkedAccounts: Bool? = nilOrValue(pigeonVar_list[4])
 
     return NativeMfaSession(
       userId: userId,
       sessionId: sessionId,
-      csid: csid
+      csid: csid,
+      newUser: newUser,
+      hasLinkedAccounts: hasLinkedAccounts
     )
   }
   func toList() -> [Any?] {
@@ -1641,6 +1651,8 @@ struct NativeMfaSession: Hashable {
       userId,
       sessionId,
       csid,
+      newUser,
+      hasLinkedAccounts,
     ]
   }
   static func == (lhs: NativeMfaSession, rhs: NativeMfaSession) -> Bool {
@@ -1701,6 +1713,8 @@ struct NativeMfaStep: Hashable {
   var session: NativeMfaSession? = nil
   var error: NativeMfaError? = nil
   var recovery: NativeMfaRecovery? = nil
+  var newUser: Bool? = nil
+  var hasLinkedAccounts: Bool? = nil
   var hasResend: Bool
   var hasForgotPin: Bool
   var hasRetry: Bool
@@ -1724,12 +1738,14 @@ struct NativeMfaStep: Hashable {
     let session: NativeMfaSession? = nilOrValue(pigeonVar_list[10])
     let error: NativeMfaError? = nilOrValue(pigeonVar_list[11])
     let recovery: NativeMfaRecovery? = nilOrValue(pigeonVar_list[12])
-    let hasResend = pigeonVar_list[13] as! Bool
-    let hasForgotPin = pigeonVar_list[14] as! Bool
-    let hasRetry = pigeonVar_list[15] as! Bool
-    let hasCancel = pigeonVar_list[16] as! Bool
-    let hasSwitchMethod = pigeonVar_list[17] as! Bool
-    let hasSelectEmail = pigeonVar_list[18] as! Bool
+    let newUser: Bool? = nilOrValue(pigeonVar_list[13])
+    let hasLinkedAccounts: Bool? = nilOrValue(pigeonVar_list[14])
+    let hasResend = pigeonVar_list[15] as! Bool
+    let hasForgotPin = pigeonVar_list[16] as! Bool
+    let hasRetry = pigeonVar_list[17] as! Bool
+    let hasCancel = pigeonVar_list[18] as! Bool
+    let hasSwitchMethod = pigeonVar_list[19] as! Bool
+    let hasSelectEmail = pigeonVar_list[20] as! Bool
 
     return NativeMfaStep(
       stepId: stepId,
@@ -1745,6 +1761,8 @@ struct NativeMfaStep: Hashable {
       session: session,
       error: error,
       recovery: recovery,
+      newUser: newUser,
+      hasLinkedAccounts: hasLinkedAccounts,
       hasResend: hasResend,
       hasForgotPin: hasForgotPin,
       hasRetry: hasRetry,
@@ -1768,6 +1786,8 @@ struct NativeMfaStep: Hashable {
       session,
       error,
       recovery,
+      newUser,
+      hasLinkedAccounts,
       hasResend,
       hasForgotPin,
       hasRetry,

@@ -36,7 +36,8 @@ final class FinvuMfaBridge {
             ),
             useEncConsent: params.useEncConsent,
             finalizeSession: params.finalizeSession,
-            selectFactorChoice: params.selectFactorChoice
+            selectFactorChoice: params.selectFactorChoice,
+            emailId: params.emailId
         )
         run(completion) { await FinvuManager.shared.mfaClient.login(loginParams) }
     }
@@ -132,7 +133,15 @@ final class FinvuMfaBridge {
         DispatchQueue.main.async { completion(.success(step)) }
     }
 
+    /// Every step carries the login's newUser / hasLinkedAccounts, known from the first step on.
     private func toNative(_ step: MfaStep) -> NativeMfaStep {
+        var native = toNativeStep(step)
+        native.newUser = FinvuManager.shared.mfaClient.newUser
+        native.hasLinkedAccounts = FinvuManager.shared.mfaClient.hasLinkedAccounts
+        return native
+    }
+
+    private func toNativeStep(_ step: MfaStep) -> NativeMfaStep {
         let stepId = UUID().uuidString
         lock.lock(); steps[stepId] = step; lock.unlock()
 
@@ -178,7 +187,8 @@ final class FinvuMfaBridge {
                 action: complete.action,
                 resultStatus: complete.result.status,
                 session: complete.result.session.map {
-                    NativeMfaSession(userId: $0.userId, sessionId: $0.sessionId, csid: $0.csid)
+                    NativeMfaSession(userId: $0.userId, sessionId: $0.sessionId, csid: $0.csid,
+                                     newUser: $0.newUser, hasLinkedAccounts: $0.hasLinkedAccounts)
                 },
                 error: complete.result.error.map { NativeMfaError(code: $0.code, message: $0.message) },
                 hasResend: false,

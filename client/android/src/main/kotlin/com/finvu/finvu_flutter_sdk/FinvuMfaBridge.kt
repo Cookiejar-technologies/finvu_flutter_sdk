@@ -55,7 +55,8 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
       ),
       useEncConsent = params.useEncConsent,
       finalizeSession = params.finalizeSession,
-      selectFactorChoice = params.selectFactorChoice
+      selectFactorChoice = params.selectFactorChoice,
+      emailId = params.emailId
     )
     run(callback) { FinvuManager.shared.mfaClient.login(loginParams) }
   }
@@ -132,7 +133,13 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
     }
   }
 
+  /** Every step carries the login's newUser / hasLinkedAccounts, known from the first step on. */
   private fun toNative(step: MfaStep): NativeMfaStep {
+    val client = FinvuManager.shared.mfaClient
+    return toNativeStep(step).copy(newUser = client.newUser, hasLinkedAccounts = client.hasLinkedAccounts)
+  }
+
+  private fun toNativeStep(step: MfaStep): NativeMfaStep {
     val stepId = UUID.randomUUID().toString()
     steps[stepId] = step
     return when (step) {
@@ -188,7 +195,7 @@ internal class FinvuMfaBridge(private val scopeProvider: () -> CoroutineScope?) 
         stepId = stepId,
         action = step.action,
         resultStatus = step.result.status,
-        session = step.result.session?.let { NativeMfaSession(it.userId, it.sessionId, it.csid) },
+        session = step.result.session?.let { NativeMfaSession(it.userId, it.sessionId, it.csid, it.newUser, it.hasLinkedAccounts) },
         error = step.result.error?.let { NativeMfaError(it.code, it.message) },
         hasResend = false,
         hasForgotPin = false,

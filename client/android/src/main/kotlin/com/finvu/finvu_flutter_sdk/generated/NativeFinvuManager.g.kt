@@ -1291,7 +1291,8 @@ data class NativeMfaLoginParams (
   val secondFactor: List<String?>? = null,
   val useEncConsent: Boolean,
   val finalizeSession: Boolean? = null,
-  val selectFactorChoice: Boolean
+  val selectFactorChoice: Boolean,
+  val emailId: String? = null
 )
  {
   companion object {
@@ -1306,7 +1307,8 @@ data class NativeMfaLoginParams (
       val useEncConsent = pigeonVar_list[7] as Boolean
       val finalizeSession = pigeonVar_list[8] as Boolean?
       val selectFactorChoice = pigeonVar_list[9] as Boolean
-      return NativeMfaLoginParams(mobileNumber, username, consentHandle, handleId, clientContext, firstFactor, secondFactor, useEncConsent, finalizeSession, selectFactorChoice)
+      val emailId = pigeonVar_list[10] as String?
+      return NativeMfaLoginParams(mobileNumber, username, consentHandle, handleId, clientContext, firstFactor, secondFactor, useEncConsent, finalizeSession, selectFactorChoice, emailId)
     }
   }
   fun toList(): List<Any?> {
@@ -1321,6 +1323,7 @@ data class NativeMfaLoginParams (
       useEncConsent,
       finalizeSession,
       selectFactorChoice,
+      emailId,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -1596,7 +1599,9 @@ data class NativeMfaResendInfo (
 data class NativeMfaSession (
   val userId: String? = null,
   val sessionId: String? = null,
-  val csid: String? = null
+  val csid: String? = null,
+  val newUser: Boolean? = null,
+  val hasLinkedAccounts: Boolean? = null
 )
  {
   companion object {
@@ -1604,7 +1609,9 @@ data class NativeMfaSession (
       val userId = pigeonVar_list[0] as String?
       val sessionId = pigeonVar_list[1] as String?
       val csid = pigeonVar_list[2] as String?
-      return NativeMfaSession(userId, sessionId, csid)
+      val newUser = pigeonVar_list[3] as Boolean?
+      val hasLinkedAccounts = pigeonVar_list[4] as Boolean?
+      return NativeMfaSession(userId, sessionId, csid, newUser, hasLinkedAccounts)
     }
   }
   fun toList(): List<Any?> {
@@ -1612,6 +1619,8 @@ data class NativeMfaSession (
       userId,
       sessionId,
       csid,
+      newUser,
+      hasLinkedAccounts,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -1681,6 +1690,8 @@ data class NativeMfaStep (
   val session: NativeMfaSession? = null,
   val error: NativeMfaError? = null,
   val recovery: NativeMfaRecovery? = null,
+  val newUser: Boolean? = null,
+  val hasLinkedAccounts: Boolean? = null,
   val hasResend: Boolean,
   val hasForgotPin: Boolean,
   val hasRetry: Boolean,
@@ -1704,13 +1715,15 @@ data class NativeMfaStep (
       val session = pigeonVar_list[10] as NativeMfaSession?
       val error = pigeonVar_list[11] as NativeMfaError?
       val recovery = pigeonVar_list[12] as NativeMfaRecovery?
-      val hasResend = pigeonVar_list[13] as Boolean
-      val hasForgotPin = pigeonVar_list[14] as Boolean
-      val hasRetry = pigeonVar_list[15] as Boolean
-      val hasCancel = pigeonVar_list[16] as Boolean
-      val hasSwitchMethod = pigeonVar_list[17] as Boolean
-      val hasSelectEmail = pigeonVar_list[18] as Boolean
-      return NativeMfaStep(stepId, action, factor, requirement, purpose, pinLength, validationError, resendInfo, availableFactors, resultStatus, session, error, recovery, hasResend, hasForgotPin, hasRetry, hasCancel, hasSwitchMethod, hasSelectEmail)
+      val newUser = pigeonVar_list[13] as Boolean?
+      val hasLinkedAccounts = pigeonVar_list[14] as Boolean?
+      val hasResend = pigeonVar_list[15] as Boolean
+      val hasForgotPin = pigeonVar_list[16] as Boolean
+      val hasRetry = pigeonVar_list[17] as Boolean
+      val hasCancel = pigeonVar_list[18] as Boolean
+      val hasSwitchMethod = pigeonVar_list[19] as Boolean
+      val hasSelectEmail = pigeonVar_list[20] as Boolean
+      return NativeMfaStep(stepId, action, factor, requirement, purpose, pinLength, validationError, resendInfo, availableFactors, resultStatus, session, error, recovery, newUser, hasLinkedAccounts, hasResend, hasForgotPin, hasRetry, hasCancel, hasSwitchMethod, hasSelectEmail)
     }
   }
   fun toList(): List<Any?> {
@@ -1728,6 +1741,8 @@ data class NativeMfaStep (
       session,
       error,
       recovery,
+      newUser,
+      hasLinkedAccounts,
       hasResend,
       hasForgotPin,
       hasRetry,

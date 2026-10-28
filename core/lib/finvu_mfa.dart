@@ -111,12 +111,16 @@ class MfaError {
   final String message;
 }
 
+/// [newUser] and [hasLinkedAccounts] come from the login's first response ("Y" / "N");
+/// null when Finvu did not send them.
 class MfaSession {
-  MfaSession({this.userId, this.sessionId, this.csid});
+  MfaSession({this.userId, this.sessionId, this.csid, this.newUser, this.hasLinkedAccounts});
 
   final String? userId;
   final String? sessionId;
   final String? csid;
+  final bool? newUser;
+  final bool? hasLinkedAccounts;
 }
 
 /// [status] is 'authenticated' ([session] set) or 'failed' ([error] set).
@@ -162,6 +166,7 @@ class LoginParams {
     this.useEncConsent = true,
     this.finalizeSession,
     this.selectFactorChoice = false,
+    this.emailId,
   });
 
   final String? mobileNumber;
@@ -173,6 +178,9 @@ class LoginParams {
   final bool useEncConsent;
   final bool? finalizeSession;
   final bool selectFactorChoice;
+
+  /// The user's email ID, sent with the login. Optional.
+  final String? emailId;
 }
 
 typedef MfaAction = Future<MfaStep> Function();

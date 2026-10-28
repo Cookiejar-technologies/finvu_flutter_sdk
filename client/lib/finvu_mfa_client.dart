@@ -18,6 +18,17 @@ class MfaClient {
 
   final native.NativeFinvuManager _native;
 
+  /// Whether the user logging in is new. Known as soon as [login] returns its first step,
+  /// so the first screen can greet a new or returning user. Null before that, or when Finvu
+  /// did not send it.
+  bool? get newUser => _newUser;
+
+  /// Whether the user already has linked accounts. Same rules as [newUser].
+  bool? get hasLinkedAccounts => _hasLinkedAccounts;
+
+  bool? _newUser;
+  bool? _hasLinkedAccounts;
+
   /// Starts an MFA login. Call [FinvuManager.connect] first.
   Future<MfaStep> login(LoginParams params) {
     final nativeParams = native.NativeMfaLoginParams(
@@ -31,7 +42,10 @@ class MfaClient {
       useEncConsent: params.useEncConsent,
       finalizeSession: params.finalizeSession,
       selectFactorChoice: params.selectFactorChoice,
+      emailId: params.emailId,
     );
+    _newUser = null;
+    _hasLinkedAccounts = null;
     return _call(() => _native.mfaLogin(nativeParams));
   }
 
@@ -47,6 +61,8 @@ class MfaClient {
   }
 
   MfaStep _toStep(native.NativeMfaStep step) {
+    if (step.newUser != null) _newUser = step.newUser;
+    if (step.hasLinkedAccounts != null) _hasLinkedAccounts = step.hasLinkedAccounts;
     final stepId = step.stepId;
     switch (step.action) {
       case MfaConstants.actionInput:
@@ -138,6 +154,8 @@ class MfaClient {
                     userId: session.userId,
                     sessionId: session.sessionId,
                     csid: session.csid,
+                    newUser: session.newUser,
+                    hasLinkedAccounts: session.hasLinkedAccounts,
                   )
                 : null,
             error: error != null
