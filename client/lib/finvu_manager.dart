@@ -330,6 +330,21 @@ class FinvuManager {
                             ),
                           )
                           .toList(),
+                      allowedCombinations: fipFiTypeIdentifier
+                          .allowedCombinations
+                          ?.whereType<List<Object?>>()
+                          .map(
+                            (combination) => combination
+                                .whereType<native.NativeTypeIdentifier>()
+                                .map(
+                                  (typeIdentifier) => FinvuTypeIdentifier(
+                                    type: typeIdentifier.type,
+                                    category: typeIdentifier.category,
+                                  ),
+                                )
+                                .toList(),
+                          )
+                          .toList(),
                     ),
                   )
                   .toList(),

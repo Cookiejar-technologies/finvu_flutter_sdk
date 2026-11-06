@@ -218,20 +218,27 @@ data class NativeFIPDetails (
 /** Generated class from Pigeon that represents data sent in messages. */
 data class NativeFIPFiTypeIdentifier (
   val fiType: String,
-  val identifiers: List<NativeTypeIdentifier?>
+  val identifiers: List<NativeTypeIdentifier?>,
+  /**
+   * Each entry is a List of NativeTypeIdentifier. Typed loosely because
+   * Pigeon's generated Dart decode fails on nested lists of custom classes.
+   */
+  val allowedCombinations: List<Any?>? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): NativeFIPFiTypeIdentifier {
       val fiType = pigeonVar_list[0] as String
       val identifiers = pigeonVar_list[1] as List<NativeTypeIdentifier?>
-      return NativeFIPFiTypeIdentifier(fiType, identifiers)
+      val allowedCombinations = pigeonVar_list[2] as List<Any?>?
+      return NativeFIPFiTypeIdentifier(fiType, identifiers, allowedCombinations)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       fiType,
       identifiers,
+      allowedCombinations,
     )
   }
   override fun equals(other: Any?): Boolean {

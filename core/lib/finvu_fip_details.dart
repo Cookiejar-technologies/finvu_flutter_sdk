@@ -13,9 +13,11 @@ class FinvuFIPFiTypeIdentifier {
   FinvuFIPFiTypeIdentifier({
     required this.fiType,
     required this.identifiers,
+    this.allowedCombinations,
   });
   String fiType;
   List<FinvuTypeIdentifier> identifiers;
+  List<List<FinvuTypeIdentifier>>? allowedCombinations;
 }
 
 class FinvuTypeIdentifier {

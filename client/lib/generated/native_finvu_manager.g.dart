@@ -232,16 +232,22 @@ class NativeFIPFiTypeIdentifier {
   NativeFIPFiTypeIdentifier({
     required this.fiType,
     required this.identifiers,
+    this.allowedCombinations,
   });
 
   String fiType;
 
   List<NativeTypeIdentifier?> identifiers;
 
+  /// Each entry is a List of NativeTypeIdentifier. Typed loosely because
+  /// Pigeon's generated Dart decode fails on nested lists of custom classes.
+  List<Object?>? allowedCombinations;
+
   List<Object?> _toList() {
     return <Object?>[
       fiType,
       identifiers,
+      allowedCombinations,
     ];
   }
 
@@ -253,6 +259,7 @@ class NativeFIPFiTypeIdentifier {
     return NativeFIPFiTypeIdentifier(
       fiType: result[0]! as String,
       identifiers: (result[1] as List<Object?>?)!.cast<NativeTypeIdentifier?>(),
+      allowedCombinations: (result[2] as List<Object?>?)?.cast<Object?>(),
     );
   }
 

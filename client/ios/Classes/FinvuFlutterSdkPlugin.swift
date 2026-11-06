@@ -503,7 +503,10 @@ public class FinvuFlutterSdkPlugin: NSObject, FlutterPlugin, NativeFinvuManager 
                 let identifiers = typeIdentifier.identifiers.map { identifier in
                     NativeTypeIdentifier(type: identifier.type, category: identifier.category)
                 }
-                return NativeFIPFiTypeIdentifier(fiType: typeIdentifier.fiType, identifiers: identifiers)
+                let allowedCombinations: [Any?]? = typeIdentifier.allowedCombinations?.map { combination in
+                    combination.map { NativeTypeIdentifier(type: $0.type, category: $0.category) }
+                }
+                return NativeFIPFiTypeIdentifier(fiType: typeIdentifier.fiType, identifiers: identifiers, allowedCombinations: allowedCombinations)
             }
             let linkingOtpLength = fipDetails!.linkingOtpLength.map { Int64($0.intValue) }
             completion(.success(NativeFIPDetails(fipId: fipDetails!.fipId, typeIdentifiers: typeIdentifiers, linkingOtpLength: linkingOtpLength)))

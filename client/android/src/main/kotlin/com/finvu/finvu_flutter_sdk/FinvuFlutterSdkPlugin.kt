@@ -497,7 +497,10 @@ class FinvuFlutterSdkPlugin: FlutterPlugin, ActivityAware, NativeFinvuManager {
         }
         NativeFIPFiTypeIdentifier(
           fipFiTypeIdentifier.fiType,
-          identifiers
+          identifiers,
+          fipFiTypeIdentifier.allowedCombinations?.map { combination ->
+            combination.map { NativeTypeIdentifier(type = it.type, category = it.category) }
+          }
         )
       }
       val fipDetails = NativeFIPDetails(response.fipId, typeIdentifiers, response.linkingOtpLength?.toLong())

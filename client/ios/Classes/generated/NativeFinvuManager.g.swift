@@ -257,22 +257,28 @@ struct NativeFIPDetails: Hashable {
 struct NativeFIPFiTypeIdentifier: Hashable {
   var fiType: String
   var identifiers: [NativeTypeIdentifier?]
+  /// Each entry is a List of NativeTypeIdentifier. Typed loosely because
+  /// Pigeon's generated Dart decode fails on nested lists of custom classes.
+  var allowedCombinations: [Any?]? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> NativeFIPFiTypeIdentifier? {
     let fiType = pigeonVar_list[0] as! String
     let identifiers = pigeonVar_list[1] as! [NativeTypeIdentifier?]
+    let allowedCombinations: [Any?]? = nilOrValue(pigeonVar_list[2])
 
     return NativeFIPFiTypeIdentifier(
       fiType: fiType,
-      identifiers: identifiers
+      identifiers: identifiers,
+      allowedCombinations: allowedCombinations
     )
   }
   func toList() -> [Any?] {
     return [
       fiType,
       identifiers,
+      allowedCombinations,
     ]
   }
   static func == (lhs: NativeFIPFiTypeIdentifier, rhs: NativeFIPFiTypeIdentifier) -> Bool {
